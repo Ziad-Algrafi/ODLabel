@@ -20,7 +20,7 @@ Autolabel is a project designed to simplify the auto-labeling of classes in imag
 
 To run the Autolabel script from the command line:
 
-2. . Navigate to the project directory and install your preferred requirements MANULLAY from the command prompt CMD. Note choose your desired file and minimum or recommened requirements:
+2. . Navigate to the project directory and install your preferred requirements MANUALLAY from the command prompt CMD. Note choose your desired file and minimum or recommened requirements:
 
    
     cd path\to\Autolabel\Requirements
