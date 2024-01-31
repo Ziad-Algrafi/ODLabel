@@ -1,5 +1,8 @@
 # Autolabel
 
+![GUI](https://github.com/ZiadAlgrafi/Autolabel-yolov8/assets/117011801/e7ba1f79-1808-4927-88d9-7e65c225d3a8)
+
+
 Autolabel is a project designed to simplify the auto-labeling of classes in images using the YOLOv8 model. The provided GUI allows users to choose between a custom YOLOv8 model or the default `yolov8s.pt` model.
 
 ## Autolabel.py
