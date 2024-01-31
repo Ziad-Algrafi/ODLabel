@@ -1,0 +1,37 @@
+
+
+# Windows 
+
+# open cmd and enter the path where you want to create your enviroment
+cd path\to\your\desired\directory
+
+# create python venv enviroment
+python -m venv myenv
+
+# Activate your enviroment
+.\myenv\Scripts\activate
+
+# Install the ultralytics package from PyPI
+pip install ultralytics
+
+# For CPU-only installation
+pip3 install torch torchvision torchaudio
+
+
+//////////////////////
+
+
+# linux
+sudo apt install git python3-pip python3-venv
+
+python3 -m venv venv
+
+. venv/bin/activate
+
+# Install the ultralytics package from PyPI
+pip install ultralytics
+
+# For CPU-only installation
+pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+
+
