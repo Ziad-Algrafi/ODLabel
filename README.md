@@ -45,7 +45,7 @@ To run the Autolabel script from the command line:
 
 Select YOLO MODEL>> if you have custom model and you prefer your images to be labelled as how you have configured your model enter the path to your custom model. If you dont have custom model you can choose the default yolov8s.pt model from ultralytics library i have included it in requirements folder
 
-Select Images Folder>> select the folder that contains your desired images to be labelled. Note choose the root path for the folder, Also based on the names of your images your labels will correspond to that.
+Select Images Folder>> select the folder that contains your desired images to be labelled. Note choose the root path for the folder, and Ensure that your images are in one of the following formats: jpg, jpeg, png, or jfif. Also based on the names of your images your labels will correspond to that.
 
 Select Output Directory>> select where the labels results will be outputed. 
 
