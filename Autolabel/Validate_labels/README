@@ -1,0 +1,6 @@
+# You can validate the results from auto label process using this code.
+# What you need to change for this to work is the path for the 
+    images_directory
+    labels_directory
+    output_directory
+# And the model Dictionary classes if you are using the provided model in AutolabelGUI use the coco128.yaml dataset dictionary in Validate_labels folder
