@@ -56,7 +56,10 @@ To run the Autolabel script from the command line:
 
 ### Choose model to download
 
-    https://github.com/ultralytics/assets/releases/download/v8.1.0/yolov8x-worldv2.pt
+- [Small (52.2 accuracy)](https://github.com/ultralytics/assets/releases/download/v8.1.0/yolov8s-worldv2.pt)
+- [Medium (58.4 accuracy)](https://github.com/ultralytics/assets/releases/download/v8.1.0/yolov8m-worldv2.pt)
+- [LARGE (62.8 accuracy)](https://github.com/ultralytics/assets/releases/download/v8.1.0/yolov8x-worldv2.pt)
+
      
 
 ### GUI Features
