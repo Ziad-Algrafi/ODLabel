@@ -46,9 +46,9 @@ To run the Autolabel script from the command line:
 
 4. Navigate to the Autolabel script and choose the script you want to Run using cmd:
 
-   For Open Dictionary Autolabel
-    cd /home/user/Documents/Autolabel/OpenAutolabel.py
-    python OpenAutolabel.py
+  - For Open Dictionary Autolabel
+  - cd /home/user/Documents/Autolabel/OpenAutolabel.py
+  - python OpenAutolabel.py
 
    
    For custom Autolabel
