@@ -1,7 +1,6 @@
 # Autolabel
 
 Open Dictionary Autolabel
-
 ![Open-dictionary](https://github.com/Ziad-Algrafi/Autolabel-yolov8/assets/117011801/756d938e-00c7-4cb2-9fb0-581dd49c7a5d)
 
 
