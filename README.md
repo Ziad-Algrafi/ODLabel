@@ -14,7 +14,6 @@
 Autolabel is a project designed to simplify the auto-labeling of classes in images using the YOLOv8 model. The provided GUI allows users to choose between a custom YOLOv8 model or Open Dictionary model.
 
 
-
 ## Autolabel.py
 
 `Autolabel.py` is the main script of this project, featuring a graphical user interface (GUI) for easy interaction. The script leverages the Ultralytics library for object detection.
@@ -53,7 +52,7 @@ To run the Autolabel script from the command line:
 
 ### GUI Features
 
-Select YOLO MODEL>> if you have custom model and you prefer your images to be labelled as how you have configured your model enter the path to your custom model. If you dont have custom model you can choose the default yolov8s.pt model from ultralytics library i have included it in requirements folder
+Select YOLO MODEL>> if you have custom model and you prefer your images to be labelled as how you have configured your model enter the path to your custom model. If you dont have custom model you can choose the open Dictionary model from ultralytics library i have included it in requirements folder
 
 Select Images Folder>> select the folder that contains your desired images to be labelled. Note choose the root path for the folder, and Ensure that your images are in one of the following formats: jpg, jpeg, png, or jfif. Also based on the names of your images your labels will correspond to that.
 
