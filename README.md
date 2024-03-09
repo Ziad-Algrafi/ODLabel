@@ -1,14 +1,19 @@
 # Autolabel
 
-Open Dictionary Autolabel
-![Open-dictionary](https://github.com/Ziad-Algrafi/Autolabel-yolov8/assets/117011801/756d938e-00c7-4cb2-9fb0-581dd49c7a5d)
+# Open Dictionary Autolabel
+![Open-dictionary](https://github.com/Ziad-Algrafi/Autolabel-yolov8/assets/117011801/6c8867f7-e928-4986-abb4-6fe522ff900d)
 
 
-Custom Autolabel model
+
+
+
+# Custom Autolabel model
 ![GUI](https://github.com/ZiadAlgrafi/Autolabel-yolov8/assets/117011801/e7ba1f79-1808-4927-88d9-7e65c225d3a8)
 
 
-Autolabel is a project designed to simplify the auto-labeling of classes in images using the YOLOv8 model. The provided GUI allows users to choose between a custom YOLOv8 model or the default `yolov8n.pt` model.
+Autolabel is a project designed to simplify the auto-labeling of classes in images using the YOLOv8 model. The provided GUI allows users to choose between a custom YOLOv8 model or Open Dictionary model.
+
+
 
 ## Autolabel.py
 
