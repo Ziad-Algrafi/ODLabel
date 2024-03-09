@@ -14,9 +14,10 @@
 Autolabel is a project designed to simplify the auto-labeling of classes in images using the YOLOv8 model. The provided GUI allows users to choose between a custom YOLOv8 model or Open Dictionary model.
 
 
-## Autolabel.py
+## Autolabel.py and OpenAutolabel.py
 
 `Autolabel.py` is the main script of this project, featuring a graphical user interface (GUI) for easy interaction. The script leverages the Ultralytics library for object detection.
+`OpenAutolabel.py` is an open dictionary script, featuring a graphical user interface (GUI) for easy interaction. The script leverages the Ultralytics library for classifing objects to detect using YOLO WORLD.
 
 ### Usage
 
