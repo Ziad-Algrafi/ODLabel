@@ -54,7 +54,7 @@ To run the Autolabel script from the command line:
     cd /home/user/Documents/Autolabel/AutolabelGUI
     python Autolabel.py 
 
-### Choose model to download
+### Choose open dictionary model to download
 
 - [Small (52.2 accuracy)](https://github.com/ultralytics/assets/releases/download/v8.1.0/yolov8s-worldv2.pt)
 - [Medium (58.4 accuracy)](https://github.com/ultralytics/assets/releases/download/v8.1.0/yolov8m-worldv2.pt)
