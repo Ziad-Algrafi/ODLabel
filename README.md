@@ -53,7 +53,10 @@ To run the Autolabel script from the command line:
    For custom Autolabel
     cd /home/user/Documents/Autolabel/AutolabelGUI
     python Autolabel.py 
-    
+
+### Choose model to download
+
+    https://github.com/ultralytics/assets/releases/download/v8.1.0/yolov8x-worldv2.pt
      
 
 ### GUI Features
