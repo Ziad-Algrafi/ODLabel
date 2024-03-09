@@ -51,9 +51,9 @@ To run the Autolabel script from the command line:
   - python OpenAutolabel.py
 
    
-   For custom Autolabel
-    cd /home/user/Documents/Autolabel/AutolabelGUI
-    python Autolabel.py 
+  - For custom Autolabel
+  - cd /home/user/Documents/Autolabel/AutolabelGUI
+  - python Autolabel.py 
 
 ### Choose open dictionary model to download
 
