@@ -58,6 +58,8 @@ Select Images Folder>> select the folder that contains your desired images to be
 
 Select Output Directory>> select where the labels results will be outputed. 
 
+Enter Classes to detect>> enter the names of the classes you want to detect. Separate each class name with a comma. Do not use a comma after the last class.
+
 Select Device>> based on the your device is it GPU or CPU. If GPU choose 0. If CPU choose cpu
 
 Run Code>> after adding paths and selecting device you can run the program using Run Code button. Wait few seconds based on your device and check the Log Run.
