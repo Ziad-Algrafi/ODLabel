@@ -15,9 +15,10 @@ from PyQt6.QtWidgets import (
     QComboBox,
     QTextEdit,
     QSlider,
-    QGridLayout,QScrollArea
+    QGridLayout,
+    QScrollArea
 )
-from PyQt6.QtGui import QPixmap, QIcon
+from PyQt6.QtGui import QPixmap
 from PyQt6.QtCore import Qt
 from ultralytics import YOLO
 from ultralytics.utils.torch_utils import select_device
@@ -84,7 +85,7 @@ class MainWindow(QMainWindow):
         output_format_layout = QHBoxLayout()
         output_format_label = QLabel("Output Format:")
         self.output_format_combo_box = QComboBox()
-        self.output_format_combo_box.addItems(["YOLO", "COCO", "Pascal VOC", "TF Records", "Open Images"])
+        self.output_format_combo_box.addItems(["YOLO", "COCO"])
         output_format_layout.addWidget(output_format_label)
         output_format_layout.addWidget(self.output_format_combo_box)
         left_panel_layout.addLayout(output_format_layout)
@@ -306,112 +307,6 @@ class MainWindow(QMainWindow):
                 with open(coco_json_path, "w") as coco_file:
                     json.dump(coco_output, coco_file)
 
-            elif output_format == "pascal voc":
-                import xml.etree.ElementTree as ET
-
-                for result in results:
-                    boxes = result.boxes
-                    xml_root = ET.Element("annotation")
-                    ET.SubElement(xml_root, "folder").text = "images"
-                    ET.SubElement(xml_root, "filename").text = image_file
-
-                    size = ET.SubElement(xml_root, "size")
-                    ET.SubElement(size, "width").text = str(img.shape[1])
-                    ET.SubElement(size, "height").text = str(img.shape[0])
-                    ET.SubElement(size, "depth").text = str(img.shape[2])
-
-                    for box in boxes:
-                        xy = box.xywhn.cpu().numpy()
-                        c = box.cls.cpu().numpy()
-                        class_id = int(c)
-                        class_name = model.names[class_id]
-
-                        obj = ET.SubElement(xml_root, "object")
-                        ET.SubElement(obj, "name").text = class_name
-                        ET.SubElement(obj, "pose").text = "Unspecified"
-                        ET.SubElement(obj, "truncated").text = "0"
-                        ET.SubElement(obj, "difficult").text = "0"
-
-                        bbox = ET.SubElement(obj, "bndbox")
-                        x, y, w, h = [int(val) for val in xy[:4]]
-                        ET.SubElement(bbox, "xmin").text = str(x)
-                        ET.SubElement(bbox, "ymin").text = str(y)
-                        ET.SubElement(bbox, "xmax").text = str(x + w)
-                        ET.SubElement(bbox, "ymax").text = str(y + h)
-
-                    xml_path = os.path.join(out_dir, f"{os.path.splitext(image_file)[0]}.xml")
-                    tree = ET.ElementTree(xml_root)
-                    tree.write(xml_path)
-
-            elif output_format == "tf records":
-                import tensorflow as tf
-                from object_detection.utils import dataset_util
-
-                writer = tf.io.TFRecordWriter(os.path.join(out_dir, "output.tfrecord"))
-
-                for result in results:
-                    boxes = result.boxes
-                    xmins, ymins, xmaxs, ymaxs, classes, classes_text = [], [], [], [], [], []
-
-                    for box in boxes:
-                        xy = box.xywhn.cpu().numpy()
-                        c = box.cls.cpu().numpy()
-                        class_id = int(c)
-                        class_name = model.names[class_id]
-
-                        x, y, w, h = [int(val) for val in xy[:4]]
-                        xmins.append(x / img.shape[1])
-                        ymins.append(y / img.shape[0])
-                        xmaxs.append((x + w) / img.shape[1])
-                        ymaxs.append((y + h) / img.shape[0])
-                        classes.append(class_id)
-                        classes_text.append(class_name.encode('utf8'))
-
-
-                    tf_example = tf.train.Example(features=tf.train.Features(feature={
-                        'image/height': dataset_util.int64_feature(img.shape[0]),
-                        'image/width': dataset_util.int64_feature(img.shape[1]),
-                        'image/filename': dataset_util.bytes_feature(image_file.encode('utf8')),
-                        'image/source_id': dataset_util.bytes_feature(image_file.encode('utf8')),
-                        'image/encoded': dataset_util.bytes_feature(cv2.imencode('.jpg', img)[1].tobytes()),
-                        'image/object/bbox/xmin': dataset_util.float_list_feature(xmins),
-                        'image/object/bbox/xmax': dataset_util.float_list_feature(xmaxs),
-                        'image/object/bbox/ymin': dataset_util.float_list_feature(ymins),
-                        'image/object/bbox/ymax': dataset_util.float_list_feature(ymaxs),
-                        'image/object/class/text': dataset_util.bytes_list_feature(classes_text),
-                        'image/object/class/label': dataset_util.int64_list_feature(classes)
-                    }))
-
-                    writer.write(tf_example.SerializeToString())
-
-                writer.close()
-
-            elif output_format == "open images":
-                import csv
-
-                csv_path = os.path.join(out_dir, "open_images_output.csv")
-                with open(csv_path, "w", newline='') as csvfile:
-                    csv_writer = csv.writer(csvfile, dialect='excel')
-                    csv_writer.writerow(["ImageID", "Source", "LabelName", "Confidence", "XMin", "XMax", "YMin", "YMax",
-                                        "IsOccluded", "IsTruncated", "IsGroupOf", "IsDepiction", "IsInside"])
-
-                    for i, result in enumerate(results):
-                        boxes = result.boxes
-                        for box in boxes:
-                            xy = box.xywhn.cpu().numpy()
-                            c = box.cls.cpu().numpy()
-                            class_id = int(c)
-                            class_name = model.names[class_id]
-                            confidence = xy[4]
-
-                            x, y, w, h = [int(val) for val in xy[:4]]
-                            xmin = x / img.shape[1]
-                            xmax = (x + w) / img.shape[1]
-                            ymin = y / img.shape[0]
-                            ymax = (y + h) / img.shape[0]
-
-                            row = [f"{i}_{class_id}", "", class_name, confidence, xmin, xmax, ymin, ymax, 0, 0, 0, 0, 0]
-                            csv_writer.writerow(row)
 
             self.log_text_edit.append(f"Results and images saved in {output_directory}")
             self.running = False
