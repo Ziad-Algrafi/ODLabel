@@ -1,122 +1,423 @@
-import tkinter as tk
-from tkinter import ttk
-from tkinter import filedialog
+import os
+import sys
+import cv2
+import shutil
+from PyQt6.QtWidgets import (
+    QApplication,
+    QMainWindow,
+    QLabel,
+    QLineEdit,
+    QPushButton,
+    QFileDialog,
+    QVBoxLayout,
+    QHBoxLayout,
+    QWidget,
+    QComboBox,
+    QTextEdit,
+    QSlider,
+    QGridLayout,QScrollArea
+)
+from PyQt6.QtGui import QPixmap, QIcon
+from PyQt6.QtCore import Qt
 from ultralytics import YOLO
 from ultralytics.utils.torch_utils import select_device
-import os
-import cv2
 
-class YOLOGUI:
-    def __init__(self, root):
-        self.root = root
-        self.root.title("YOLO Open Dictionary Auto label")
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("YOLO Open Dictionary Auto Label")
+        self.setMinimumSize(1200, 800)
 
-        self.model_path = tk.StringVar()
-        self.images_folder = tk.StringVar()
-        self.output_directory = tk.StringVar()
-        self.classes = tk.StringVar(value="person, bus, car")
+        central_widget = QWidget()
+        self.setCentralWidget(central_widget)
 
-        self.device_var = tk.StringVar(value="cpu")
+        main_layout = QHBoxLayout()
+        central_widget.setLayout(main_layout)
 
-        ttk.Button(root, text="Select YOLO Model", command=self.select_model).grid(row=0, column=2, padx=10, pady=10)
-        ttk.Button(root, text="Select Images Folder", command=self.select_images_folder).grid(row=1, column=2, padx=10, pady=10)
-        ttk.Button(root, text="Select Output Directory", command=self.select_output_directory).grid(row=2, column=2, padx=10, pady=10)
+        # Left Panel
+        left_panel_layout = QVBoxLayout()
+        main_layout.addLayout(left_panel_layout)
 
-        ttk.Label(root, text="Model Path:").grid(row=0, column=0, padx=10, pady=10, sticky=tk.E)
-        ttk.Label(root, textvariable=self.model_path).grid(row=0, column=1, padx=10, pady=10, sticky=tk.W)
+        # Model Path
+        model_path_layout = QHBoxLayout()
+        model_path_label = QLabel("Model Path:")
+        self.model_path_line_edit = QLineEdit()
+        model_path_button = QPushButton("Select YOLO Model")
+        model_path_button.clicked.connect(self.select_model)
+        model_path_layout.addWidget(model_path_label)
+        model_path_layout.addWidget(self.model_path_line_edit)
+        model_path_layout.addWidget(model_path_button)
+        left_panel_layout.addLayout(model_path_layout)
 
-        ttk.Label(root, text="Images Folder:").grid(row=1, column=0, padx=10, pady=10, sticky=tk.E)
-        ttk.Label(root, textvariable=self.images_folder).grid(row=1, column=1, padx=10, pady=10, sticky=tk.W)
+        # Images Folder
+        images_folder_layout = QHBoxLayout()
+        images_folder_label = QLabel("Images Folder:")
+        self.images_folder_line_edit = QLineEdit()
+        images_folder_button = QPushButton("Select Images Folder")
+        images_folder_button.clicked.connect(self.select_images_folder)
+        images_folder_layout.addWidget(images_folder_label)
+        images_folder_layout.addWidget(self.images_folder_line_edit)
+        images_folder_layout.addWidget(images_folder_button)
+        left_panel_layout.addLayout(images_folder_layout)
 
-        ttk.Label(root, text="Output Directory:").grid(row=2, column=0, padx=10, pady=10, sticky=tk.E)
-        ttk.Label(root, textvariable=self.output_directory).grid(row=2, column=1, padx=10, pady=10, sticky=tk.W)
+        # Output Directory
+        output_directory_layout = QHBoxLayout()
+        output_directory_label = QLabel("Output Directory:")
+        self.output_directory_line_edit = QLineEdit()
+        output_directory_button = QPushButton("Select Output Directory")
+        output_directory_button.clicked.connect(self.select_output_directory)
+        output_directory_layout.addWidget(output_directory_label)
+        output_directory_layout.addWidget(self.output_directory_line_edit)
+        output_directory_layout.addWidget(output_directory_button)
+        left_panel_layout.addLayout(output_directory_layout)
 
-        ttk.Label(root, text="Classes:").grid(row=3, column=0, padx=10, pady=10, sticky=tk.E)
-        ttk.Entry(root, textvariable=self.classes).grid(row=3, column=1, padx=10, pady=10, sticky=tk.W)
+        # Device
+        device_layout = QHBoxLayout()
+        device_label = QLabel("Select Device:")
+        self.device_combo_box = QComboBox()
+        self.device_combo_box.addItems(["cpu", "0"])
+        device_layout.addWidget(device_label)
+        device_layout.addWidget(self.device_combo_box)
+        left_panel_layout.addLayout(device_layout)
 
-        ttk.Label(root, text="Log Run:").grid(row=4, column=0, padx=10, pady=10, sticky=tk.E)
-        self.log_text = tk.Text(root, height=10, width=50, wrap=tk.WORD)
-        self.log_text.grid(row=4, column=1, columnspan=2, padx=10, pady=10, sticky=tk.W)
+        # Output Format
+        output_format_layout = QHBoxLayout()
+        output_format_label = QLabel("Output Format:")
+        self.output_format_combo_box = QComboBox()
+        self.output_format_combo_box.addItems(["YOLO", "COCO", "Pascal VOC", "TF Records", "Open Images"])
+        output_format_layout.addWidget(output_format_label)
+        output_format_layout.addWidget(self.output_format_combo_box)
+        left_panel_layout.addLayout(output_format_layout)
 
-        ttk.Label(root, text="Select Device:").grid(row=5, column=0, padx=10, pady=10)
-        combobox = ttk.Combobox(root, textvariable=self.device_var, values=["cpu", "0"])
-        combobox.grid(row=5, column=1, padx=10, pady=10)
-        self.device_var.set("cpu")  
+        # Train/Val Split
+        split_layout = QHBoxLayout()
+        split_label = QLabel("Train/Val Split:")
+        self.val_slider = QSlider(Qt.Orientation.Horizontal)
+        self.val_slider.setMinimum(0)
+        self.val_slider.setMaximum(100)
+        self.val_slider.setValue(20)
+        self.val_slider.setTickPosition(QSlider.TickPosition.TicksBelow)
+        self.val_slider.setTickInterval(10)
+        self.val_label = QLabel(f"0.{self.val_slider.value()}0")
+        self.val_slider.valueChanged.connect(self.update_val_label)
+        split_layout.addWidget(split_label)
+        split_layout.addWidget(self.val_slider)
+        split_layout.addWidget(self.val_label)
+        left_panel_layout.addLayout(split_layout)
 
-        self.run_button = ttk.Button(root, text="Run Code", command=self.run_code, state=tk.DISABLED)
-        self.run_button.grid(row=5, column=2, columnspan=2, padx=10, pady=10)
+        # Run/Stop Button
+        self.run_stop_button = QPushButton("Run Code")
+        self.run_stop_button.clicked.connect(self.run_stop_code)
+        self.run_stop_button.setEnabled(False)
+        left_panel_layout.addWidget(self.run_stop_button)
 
-        root.geometry("600x500")
+        # Log Text
+        self.log_text_edit = QTextEdit()
+        self.log_text_edit.setReadOnly(True)
+        left_panel_layout.addWidget(self.log_text_edit)
 
-        root.protocol("WM_DELETE_WINDOW", self.on_close)
+        # Photo Gallery
+        photo_gallery_layout = QVBoxLayout()
+        main_layout.addLayout(photo_gallery_layout)
+
+        photo_gallery_label = QLabel("Photo Gallery")
+        photo_gallery_label.setStyleSheet("font-weight: bold; font-size: 16px; padding: 10px;")
+        photo_gallery_layout.addWidget(photo_gallery_label)
+
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        photo_gallery_layout.addWidget(scroll_area)
+
+        scroll_widget = QWidget()
+        scroll_area.setWidget(scroll_widget)
+
+        self.photo_grid_layout = QGridLayout()
+        scroll_widget.setLayout(self.photo_grid_layout)
+
+        self.running = False
 
     def select_model(self):
-        path = filedialog.askopenfilename(title="Select YOLO Model", filetypes=[("YOLO Model", "*.pt")])
-        if path:
-            self.model_path.set(path)
-            self.enable_run_button()
+        file_dialog = QFileDialog()
+        file_dialog.setNameFilter("YOLO Model (*.pt)")
+        if file_dialog.exec():
+            model_path = file_dialog.selectedFiles()[0]
+            self.model_path_line_edit.setText(model_path)
+            self.check_run_button_state()
 
     def select_images_folder(self):
-        folder = filedialog.askdirectory(title="Select Images Folder")
-        if folder:
-            self.images_folder.set(folder)
-            self.enable_run_button()
+        folder_dialog = QFileDialog()
+        folder_dialog.setFileMode(QFileDialog.FileMode.Directory)
+        if folder_dialog.exec():
+            images_folder = folder_dialog.selectedFiles()[0]
+            self.images_folder_line_edit.setText(images_folder)
+            self.load_photos(images_folder)
+            self.check_run_button_state()
+
+    def load_photos(self, folder):
+        self.clear_photo_grid()
+        image_files = [f for f in os.listdir(folder) if f.endswith(('.jpg', '.jpeg', '.png', 'jfif'))]
+        row = 0
+        col = 0
+        for image_file in image_files:
+            img_path = os.path.join(folder, image_file)
+            pixmap = QPixmap(img_path).scaled(200, 200, Qt.AspectRatioMode.KeepAspectRatio)
+            label = QLabel()
+            label.setPixmap(pixmap)
+            label.setStyleSheet("border: 1px solid #ccc; padding: 5px;")
+            self.photo_grid_layout.addWidget(label, row, col)
+            col += 1
+            if col >= 4:
+                row += 1
+                col = 0
+
+    def clear_photo_grid(self):
+        for i in reversed(range(self.photo_grid_layout.count())):
+            item = self.photo_grid_layout.itemAt(i)
+            if item:
+                widget = item.widget()
+                if widget:
+                    widget.deleteLater()
 
     def select_output_directory(self):
-        folder = filedialog.askdirectory(title="Select Output Directory")
-        if folder:
-            self.output_directory.set(folder)
-            self.enable_run_button()
+        folder_dialog = QFileDialog()
+        folder_dialog.setFileMode(QFileDialog.FileMode.Directory)
+        if folder_dialog.exec():
+            output_directory = folder_dialog.selectedFiles()[0]
+            self.output_directory_line_edit.setText(output_directory)
+            self.check_run_button_state()
 
-    def enable_run_button(self):
-        if all([self.model_path.get(), self.images_folder.get(), self.output_directory.get()]):
-            self.run_button['state'] = tk.NORMAL
+    def update_val_label(self, value):
+        self.val_label.setText(f"0.{value}0")
+
+    def check_run_button_state(self):
+        model_path = self.model_path_line_edit.text()
+        images_folder = self.images_folder_line_edit.text()
+        output_directory = self.output_directory_line_edit.text()
+        self.run_stop_button.setEnabled(bool(model_path and images_folder and output_directory))
+
+    def run_stop_code(self):
+        if not self.running:
+            self.running = True
+            self.run_stop_button.setText("Stop Code")
+            self.run_code()
         else:
-            self.run_button['state'] = tk.DISABLED
+            self.running = False
+            self.run_stop_button.setText("Run Code")
+            # Add code to stop the code execution here
 
     def run_code(self):
-        select_device(self.device_var.get())
-        self.log_text.delete(1.0, tk.END)
+        select_device(self.device_combo_box.currentText())
+        self.log_text_edit.clear()
 
-        model = YOLO(self.model_path.get())
-        model.set_classes(self.classes.get().split(', '))
+        model_path = self.model_path_line_edit.text()
+        images_folder = self.images_folder_line_edit.text()
+        output_directory = self.output_directory_line_edit.text()
+        val_split = self.val_slider.value() / 100
+        output_format = self.output_format_combo_box.currentText().lower()
 
-        image_files = [f for f in os.listdir(self.images_folder.get()) if f.endswith(('.jpg', '.jpeg', '.png', 'jfif'))]
+        model = YOLO(model_path)
+
+        image_files = [f for f in os.listdir(images_folder) if f.endswith(('.jpg', '.jpeg', '.png', 'jfif'))]
 
         if not image_files:
-            self.log_text.insert(tk.END, "No images in the folder. Exiting.\n")
+            self.log_text_edit.append("No images in the folder. Exiting.")
+            self.running = False
+            self.run_stop_button.setText("Run Code")
+            return
 
-        for image_file in image_files:
-            img_path = os.path.join(self.images_folder.get(), image_file)
+        train_dir = os.path.join(output_directory, "train")
+        val_dir = os.path.join(output_directory, "val")
+        os.makedirs(train_dir, exist_ok=True)
+        os.makedirs(val_dir, exist_ok=True)
+
+        for i, image_file in enumerate(image_files):
+            if not self.running:
+                break
+
+            img_path = os.path.join(images_folder, image_file)
             img = cv2.imread(img_path)
 
             results = model(img, conf=0.3, imgsz=640)
-            self.log_text.insert(tk.END, f"Results for {image_file}:\n")
+            self.log_text_edit.append(f"Results for {image_file}:")
 
-            result_txt_path = os.path.join(self.output_directory.get(), f"{os.path.splitext(image_file)[0]}.txt")
+            is_val = i < len(image_files) * val_split
+            out_dir = val_dir if is_val else train_dir
+            out_img_path = os.path.join(out_dir, image_file)
+            shutil.copy(img_path, out_img_path)
 
-            with open(result_txt_path, 'a') as txt_file:
+            if output_format == "yolo":
+                result_txt_path = os.path.join(out_dir, f"{os.path.splitext(image_file)[0]}.txt")
+                with open(result_txt_path, 'a') as txt_file:
+                    for result in results:
+                        boxes = result.boxes
+                        for box in boxes:
+                            xy = box.xywhn.cpu().numpy()
+                            c = box.cls.cpu().numpy()
+                            class_id = int(c)
+                            self.log_text_edit.append(f" ({class_id}): {xy}")
+                            self.log_text_edit.append(str(class_id))
+
+                            for box in xy:
+                                txt_file.write(f"{class_id} {box[0]} {box[1]} {box[2]} {box[3]}\n")
+
+                            QApplication.processEvents()
+
+            elif output_format == "coco":
+                import json
+                coco_output = {
+                    "info": {},
+                    "licenses": [],
+                    "images": [],
+                    "annotations": [],
+                    "categories": []
+                }
+
+                for category in model.names:
+                    coco_output["categories"].append({
+                        "id": model.names.index(category),
+                        "name": category,
+                        "supercategory": category
+                    })
+
+                coco_output["images"].append({
+                    "id": i,
+                    "file_name": image_file,
+                    "height": img.shape[0],
+                    "width": img.shape[1]
+                })
+
                 for result in results:
                     boxes = result.boxes
                     for box in boxes:
                         xy = box.xywhn.cpu().numpy()
                         c = box.cls.cpu().numpy()
                         class_id = int(c)
-                        self.log_text.insert(tk.END, f" ({class_id}): {xy}\n")
-                        self.log_text.insert(tk.END, str(class_id) + "\n")
+                        x, y, w, h = [int(val) for val in xy[:4]]
+                        coco_output["annotations"].append({
+                            "id": len(coco_output["annotations"]),
+                            "image_id": i,
+                            "category_id": class_id,
+                            "bbox": [x, y, w, h],
+                            "area": w * h,
+                            "iscrowd": 0
+                        })
 
-                        for box in xy:
-                            txt_file.write(f"{class_id} {box[0]} {box[1]} {box[2]} {box[3]}\n")
+                coco_json_path = os.path.join(out_dir, "coco_output.json")
+                with open(coco_json_path, "w") as coco_file:
+                    json.dump(coco_output, coco_file)
 
-                        self.log_text.update_idletasks()
-                        self.log_text.see(tk.END)
+            elif output_format == "pascal voc":
+                import xml.etree.ElementTree as ET
 
-        self.log_text.insert(tk.END, f"Results saved in {self.output_directory.get()}\n")
+                for result in results:
+                    boxes = result.boxes
+                    xml_root = ET.Element("annotation")
+                    ET.SubElement(xml_root, "folder").text = "images"
+                    ET.SubElement(xml_root, "filename").text = image_file
 
-    def on_close(self):
-        self.root.destroy()
+                    size = ET.SubElement(xml_root, "size")
+                    ET.SubElement(size, "width").text = str(img.shape[1])
+                    ET.SubElement(size, "height").text = str(img.shape[0])
+                    ET.SubElement(size, "depth").text = str(img.shape[2])
 
+                    for box in boxes:
+                        xy = box.xywhn.cpu().numpy()
+                        c = box.cls.cpu().numpy()
+                        class_id = int(c)
+                        class_name = model.names[class_id]
+
+                        obj = ET.SubElement(xml_root, "object")
+                        ET.SubElement(obj, "name").text = class_name
+                        ET.SubElement(obj, "pose").text = "Unspecified"
+                        ET.SubElement(obj, "truncated").text = "0"
+                        ET.SubElement(obj, "difficult").text = "0"
+
+                        bbox = ET.SubElement(obj, "bndbox")
+                        x, y, w, h = [int(val) for val in xy[:4]]
+                        ET.SubElement(bbox, "xmin").text = str(x)
+                        ET.SubElement(bbox, "ymin").text = str(y)
+                        ET.SubElement(bbox, "xmax").text = str(x + w)
+                        ET.SubElement(bbox, "ymax").text = str(y + h)
+
+                    xml_path = os.path.join(out_dir, f"{os.path.splitext(image_file)[0]}.xml")
+                    tree = ET.ElementTree(xml_root)
+                    tree.write(xml_path)
+
+            elif output_format == "tf records":
+                import tensorflow as tf
+                from object_detection.utils import dataset_util
+
+                writer = tf.io.TFRecordWriter(os.path.join(out_dir, "output.tfrecord"))
+
+                for result in results:
+                    boxes = result.boxes
+                    xmins, ymins, xmaxs, ymaxs, classes, classes_text = [], [], [], [], [], []
+
+                    for box in boxes:
+                        xy = box.xywhn.cpu().numpy()
+                        c = box.cls.cpu().numpy()
+                        class_id = int(c)
+                        class_name = model.names[class_id]
+
+                        x, y, w, h = [int(val) for val in xy[:4]]
+                        xmins.append(x / img.shape[1])
+                        ymins.append(y / img.shape[0])
+                        xmaxs.append((x + w) / img.shape[1])
+                        ymaxs.append((y + h) / img.shape[0])
+                        classes.append(class_id)
+                        classes_text.append(class_name.encode('utf8'))
+
+
+                    tf_example = tf.train.Example(features=tf.train.Features(feature={
+                        'image/height': dataset_util.int64_feature(img.shape[0]),
+                        'image/width': dataset_util.int64_feature(img.shape[1]),
+                        'image/filename': dataset_util.bytes_feature(image_file.encode('utf8')),
+                        'image/source_id': dataset_util.bytes_feature(image_file.encode('utf8')),
+                        'image/encoded': dataset_util.bytes_feature(cv2.imencode('.jpg', img)[1].tobytes()),
+                        'image/object/bbox/xmin': dataset_util.float_list_feature(xmins),
+                        'image/object/bbox/xmax': dataset_util.float_list_feature(xmaxs),
+                        'image/object/bbox/ymin': dataset_util.float_list_feature(ymins),
+                        'image/object/bbox/ymax': dataset_util.float_list_feature(ymaxs),
+                        'image/object/class/text': dataset_util.bytes_list_feature(classes_text),
+                        'image/object/class/label': dataset_util.int64_list_feature(classes)
+                    }))
+
+                    writer.write(tf_example.SerializeToString())
+
+                writer.close()
+
+            elif output_format == "open images":
+                import csv
+
+                csv_path = os.path.join(out_dir, "open_images_output.csv")
+                with open(csv_path, "w", newline='') as csvfile:
+                    csv_writer = csv.writer(csvfile, dialect='excel')
+                    csv_writer.writerow(["ImageID", "Source", "LabelName", "Confidence", "XMin", "XMax", "YMin", "YMax",
+                                        "IsOccluded", "IsTruncated", "IsGroupOf", "IsDepiction", "IsInside"])
+
+                    for i, result in enumerate(results):
+                        boxes = result.boxes
+                        for box in boxes:
+                            xy = box.xywhn.cpu().numpy()
+                            c = box.cls.cpu().numpy()
+                            class_id = int(c)
+                            class_name = model.names[class_id]
+                            confidence = xy[4]
+
+                            x, y, w, h = [int(val) for val in xy[:4]]
+                            xmin = x / img.shape[1]
+                            xmax = (x + w) / img.shape[1]
+                            ymin = y / img.shape[0]
+                            ymax = (y + h) / img.shape[0]
+
+                            row = [f"{i}_{class_id}", "", class_name, confidence, xmin, xmax, ymin, ymax, 0, 0, 0, 0, 0]
+                            csv_writer.writerow(row)
+
+            self.log_text_edit.append(f"Results and images saved in {output_directory}")
+            self.running = False
+            self.run_stop_button.setText("Run Code")
 if __name__ == "__main__":
-    root = tk.Tk()
-    app = YOLOGUI(root)
-    root.mainloop()
+    app = QApplication(sys.argv)
+    window = MainWindow()
+    window.show()
+    sys.exit(app.exec())
