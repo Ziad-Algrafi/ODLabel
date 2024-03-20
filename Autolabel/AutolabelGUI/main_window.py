@@ -13,8 +13,8 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("YOLO Open Dictionary Auto Label")
-        self.setMinimumSize(1200, 800)
-
+        # self.setMinimumSize(1200, 800)
+        self.setFixedSize(1280, 900)
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
 
@@ -57,6 +57,15 @@ class MainWindow(QMainWindow):
         output_directory_layout.addWidget(self.output_directory_line_edit)
         output_directory_layout.addWidget(output_directory_button)
         left_panel_layout.addLayout(output_directory_layout)
+        
+        # Classes
+        classes_layout = QHBoxLayout()
+        classes_label = QLabel("Classes:")
+        self.classes_line_edit = QLineEdit()
+        self.classes_line_edit.textChanged.connect(self.update_classes)
+        classes_layout.addWidget(classes_label)
+        classes_layout.addWidget(self.classes_line_edit)
+        left_panel_layout.addLayout(classes_layout)
 
         # Device
         device_layout = QHBoxLayout()
@@ -66,6 +75,7 @@ class MainWindow(QMainWindow):
         device_layout.addWidget(device_label)
         device_layout.addWidget(self.device_combo_box)
         left_panel_layout.addLayout(device_layout)
+        
 
         # Output Format
         output_format_layout = QHBoxLayout()
@@ -89,6 +99,22 @@ class MainWindow(QMainWindow):
         self.val_slider.valueChanged.connect(self.update_val_label)
         split_layout.addWidget(split_label)
         split_layout.addWidget(self.val_slider)
+        split_layout.addWidget(self.val_label)
+        left_panel_layout.addLayout(split_layout)
+        
+        # Train/Val Split
+        split_layout = QHBoxLayout()
+        split_label = QLabel("Minimum Confidence:")
+        self.conf_slider = QSlider(Qt.Orientation.Horizontal)
+        self.conf_slider.setMinimum(0)
+        self.conf_slider.setMaximum(100)
+        self.conf_slider.setValue(20)
+        self.conf_slider.setTickPosition(QSlider.TickPosition.TicksBelow)
+        self.conf_slider.setTickInterval(10)
+        self.val_label = QLabel(f"0.{self.conf_slider.value()}0")
+        self.conf_slider.valueChanged.connect(self.update_val_label)
+        split_layout.addWidget(split_label)
+        split_layout.addWidget(self.conf_slider)
         split_layout.addWidget(self.val_label)
         left_panel_layout.addLayout(split_layout)
 
@@ -178,7 +204,9 @@ class MainWindow(QMainWindow):
         val_tab_layout = QVBoxLayout(val_tab)
         val_tab_layout.addWidget(val_scroll_area)
         self.val_photo_grid_layout = val_grid_layout
-
+        
+    def update_classes(self, text):
+        self.classes = text
     def select_model(self):
         file_dialog = QFileDialog()
         file_dialog.setNameFilter("YOLO Model (*.pt)")
@@ -193,8 +221,12 @@ class MainWindow(QMainWindow):
         if folder_dialog.exec():
             images_folder = folder_dialog.selectedFiles()[0]
             self.images_folder_line_edit.setText(images_folder)
-            self.load_photos(images_folder, "input")
-            self.check_run_button_state()
+            try:
+                self.load_photos(images_folder, "input")
+                self.check_run_button_state()
+            except Exception as e:
+                self.show_error_message(str(e))
+
 
     def load_photos(self, folder, tab_type):
         grid_layout = None
@@ -215,16 +247,19 @@ class MainWindow(QMainWindow):
         col = 0
         for image_file in image_files:
             img_path = os.path.join(folder, image_file)
-            pixmap = QPixmap(img_path).scaled(200, 200, Qt.AspectRatioMode.KeepAspectRatio)
-            label = QLabel()
-            label.setPixmap(pixmap)
-            label.setStyleSheet("border: 1px solid #ccc; padding: 5px;")
+            try:
+                pixmap = QPixmap(img_path).scaled(150, 180, Qt.AspectRatioMode.KeepAspectRatio)
+                label = QLabel()
+                label.setPixmap(pixmap)
+                label.setStyleSheet("border: 1px solid #ccc; padding: 5px;")
+                grid_layout.addWidget(label, row, col)
+                col += 1
+                if col >= 3:
+                    row += 1
+                    col = 0
+            except Exception as e:
+                self.show_error_message(f"Error loading image '{image_file}': {str(e)}")
 
-            grid_layout.addWidget(label, row, col)
-            col += 1
-            if col >= 4:
-                row += 1
-                col = 0
 
     def clear_photo_grid(self, grid_layout):
         for i in reversed(range(grid_layout.count())):
@@ -256,21 +291,25 @@ class MainWindow(QMainWindow):
         images_folder = self.images_folder_line_edit.text()
         output_directory = self.output_directory_line_edit.text()
         val_split = self.val_slider.value() / 100
+        conf_split = self.conf_slider.value() / 100
         output_format = self.output_format_combo_box.currentText().lower()
         device = self.device_combo_box.currentText()
 
-        # Create and start the worker thread
-        self.worker_thread = ObjectDetectionWorker(model_path, images_folder, output_directory, val_split, output_format, device)
-        self.worker_thread.finished.connect(self.on_worker_finished)
-        self.worker_thread.progress.connect(self.progress_bar.setValue)
-        self.worker_thread.log_update.connect(self.update_log)
-        self.worker_thread.start()
+        try:
+            # Create and start the worker thread
+            self.worker_thread = ObjectDetectionWorker(conf_split, model_path, images_folder, output_directory, val_split, output_format, self.classes, device)
+            self.worker_thread.finished.connect(self.on_worker_finished)
+            self.worker_thread.progress.connect(self.progress_bar.setValue)
+            self.worker_thread.log_update.connect(self.update_log)
+            self.worker_thread.start()
 
-        # Update UI
-        self.run_button.setEnabled(False)
-        self.stop_button.setEnabled(True)
-        self.cancel_button.setEnabled(True)
-        self.progress_bar.setValue(0)
+            # Update UI
+            self.run_button.setEnabled(False)
+            self.stop_button.setEnabled(True)
+            self.cancel_button.setEnabled(True)
+            self.progress_bar.setValue(0)
+        except Exception as e:
+            self.show_error_message(str(e))
 
     def stop_code(self):
         # Implement stopping mechanism here
@@ -279,8 +318,8 @@ class MainWindow(QMainWindow):
 
     def cancel_code(self):
         if self.worker_thread and self.worker_thread.isRunning():
-            self.worker_thread.terminate()  # Terminate the worker thread
-            self.worker_thread.wait()  # Wait for the thread to finish
+            self.worker_thread.terminate() 
+            self.worker_thread.wait()  
             self.worker_thread = None
 
         # Reset UI
@@ -289,7 +328,7 @@ class MainWindow(QMainWindow):
         self.cancel_button.setEnabled(False)
         self.progress_bar.setValue(0)
         self.log_text_edit.append("Object detection process canceled.")
-
+        
     def on_worker_finished(self):
         # Reset UI
         self.run_button.setEnabled(True)
@@ -301,8 +340,11 @@ class MainWindow(QMainWindow):
         output_directory = self.output_directory_line_edit.text()
         train_dir = os.path.join(output_directory, "train")
         val_dir = os.path.join(output_directory, "val")
-        self.load_photos(train_dir, "train")
-        self.load_photos(val_dir, "val")
+        try:
+            self.load_photos(train_dir, "train")
+            self.load_photos(val_dir, "val")
+        except Exception as e:
+            self.show_error_message(str(e))
 
     def update_log(self, log_message):
         self.log_text_edit.append(log_message)
