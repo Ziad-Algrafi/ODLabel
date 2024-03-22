@@ -1,0 +1,8 @@
+train: /media/ziad/Records/all data/images/train
+val: /media/ziad/Records/all data/images/val
+
+# number of classes
+nc: 1
+
+# class names
+names: [ {0: 'Ambulance', 1: 'Firefighter', 2: 'Traffic_jam', 3: 'Car', 4: 'Police'}]
