@@ -60,15 +60,15 @@ Select YOLO-WORLD MODEL>> if you have custom model and you prefer your images to
 
 Select Images Folder>> select the folder that contains your desired images to be labelled. Note choose the root path for the folder, and Ensure that your images are in one of the following formats: jpg, jpeg, png, or jfif. Also based on the names of your images your labels will correspond to that.
 
-Select Output Directory>> select where the labels results will be outputed. 
+Select Output Directory>> select where the images and labels results will be outputed. 
 
 Enter Classes to detect>> enter the names of the classes you want to detect. Separate each class name with a comma. Do not use a comma after the last class.
 
-Select Device>> based on the your device is it GPU or CPU. If GPU choose 0. If CPU choose cpu
+Select Device>> based on the your device is it GPU or CPU. If GPU choose 0. If CPU choose CPU
 
-Run Code>> after adding paths and selecting device you can run the program using Run Code button. Wait few seconds based on your device and check the Log Run.
+Start>> after adding paths and selecting device you can run the program using Run Code button. Wait few seconds based on your device and check the Log Run.
 
-Log Run: will updates the logs of the detction of the model in XYWH values after it finish it will output Results saved in txt files (your directory)
+Log Run: will updates the logs of the detction of the model after it finish it will output Results saved in txt files (your directory)
 
 
 
