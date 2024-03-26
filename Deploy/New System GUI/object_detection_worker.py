@@ -10,7 +10,8 @@ from ultralytics.utils.torch_utils import select_device
 def detection(model, img, conf_split):
     results = model(img, conf=conf_split, imgsz=640)
     img_height, img_width = img.shape[:2]
-    annotated_frame = results[0].plot()
+    annotated_frame = results[0].plot(probs=False)
+
 
     detections = []
     if results[0].boxes is not None:
