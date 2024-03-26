@@ -71,7 +71,8 @@ class MainWindow(QMainWindow):
         device_layout = QHBoxLayout()
         device_label = QLabel("Select Device:")
         self.device_combo_box = QComboBox()
-        self.device_combo_box.addItems(["cpu", "0"])
+     
+        self.device_combo_box.addItems(["CPU", "0"])
         device_layout.addWidget(device_label)
         device_layout.addWidget(self.device_combo_box)
         left_panel_layout.addLayout(device_layout)
@@ -120,10 +121,10 @@ class MainWindow(QMainWindow):
 
         # Run/Stop/Cancel Buttons
         self.run_stop_cancel_layout = QHBoxLayout()
-        self.run_button = QPushButton("Run Code")
+        self.run_button = QPushButton("Start")
         self.run_button.clicked.connect(self.run_code)
         self.run_button.setEnabled(False)
-        self.stop_button = QPushButton("Stop Code")
+        self.stop_button = QPushButton("Stop")
         self.stop_button.clicked.connect(self.stop_code)
         self.stop_button.setEnabled(False)
         self.cancel_button = QPushButton("Cancel")
