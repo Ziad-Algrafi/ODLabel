@@ -239,11 +239,25 @@ class MainWindow(QMainWindow):
 
         self.clear_photo_grid(grid_layout)
 
-        image_files = [f for f in os.listdir(folder) if f.endswith(('.jpg', '.jpeg', '.png', 'jfif'))]
+        if tab_type == "input":
+            image_files = [f for f in os.listdir(folder) if f.endswith(('.jpg', '.jpeg', '.png', 'jfif'))]
+        elif tab_type == "train":
+            train_dir = os.path.join(folder, "detected")
+            image_files = [f for f in os.listdir(train_dir) if f.endswith(('.jpg', '.jpeg', '.png', 'jfif'))]
+        elif tab_type == "val":
+            val_dir = os.path.join(folder, "detected")
+            image_files = [f for f in os.listdir(val_dir) if f.endswith(('.jpg', '.jpeg', '.png', 'jfif'))]
+
         row = 0
         col = 0
         for image_file in image_files:
-            img_path = os.path.join(folder, image_file)
+            if tab_type == "input":
+                img_path = os.path.join(folder, image_file)
+            elif tab_type == "train":
+                img_path = os.path.join(train_dir, image_file)
+            elif tab_type == "val":
+                img_path = os.path.join(val_dir, image_file)
+
             try:
                 pixmap = QPixmap(img_path).scaled(150, 180, Qt.AspectRatioMode.KeepAspectRatio)
                 label = QLabel()
@@ -256,7 +270,6 @@ class MainWindow(QMainWindow):
                     col = 0
             except Exception as e:
                 self.show_error_message(f"Error loading image '{image_file}': {str(e)}")
-
 
     def clear_photo_grid(self, grid_layout):
         for i in reversed(range(grid_layout.count())):
