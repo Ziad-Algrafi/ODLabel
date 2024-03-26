@@ -160,10 +160,7 @@ class MainWindow(QMainWindow):
         
         self.tab_widget.addTab(self.input_tab, "Input")
         self.tab_widget.addTab(self.output_tab, "Output")
-    #     self.create_photo_gallery_tabs()
 
-    # def create_photo_gallery_tabs(self):
-        # Input Tab
         input_tab_layout = QVBoxLayout()
         self.input_tab.setLayout(input_tab_layout)
 
@@ -206,7 +203,7 @@ class MainWindow(QMainWindow):
         self.val_photo_grid_layout = val_grid_layout
         
     def update_classes(self, text):
-        self.classes = text
+        self.classes = [c.strip() for c in text.split(',')]
     def select_model(self):
         file_dialog = QFileDialog()
         file_dialog.setNameFilter("YOLO Model (*.pt)")
@@ -278,7 +275,10 @@ class MainWindow(QMainWindow):
             self.check_run_button_state()
 
     def update_val_label(self, value):
-        self.val_label.setText(f"0.{value}0")
+        if self.sender() == self.val_slider:
+            self.val_label.setText(f"{value / 100:.2f}")
+        elif self.sender() == self.conf_slider:
+            self.val_label.setText(f"{value / 100:.2f}")
 
     def check_run_button_state(self):
         model_path = self.model_path_line_edit.text()
@@ -296,24 +296,22 @@ class MainWindow(QMainWindow):
         device = self.device_combo_box.currentText()
 
         try:
-            # Create and start the worker thread
             self.worker_thread = ObjectDetectionWorker(conf_split, model_path, images_folder, output_directory, val_split, output_format, self.classes, device)
             self.worker_thread.finished.connect(self.on_worker_finished)
             self.worker_thread.progress.connect(self.progress_bar.setValue)
             self.worker_thread.log_update.connect(self.update_log)
             self.worker_thread.start()
 
-            # Update UI
+            
             self.run_button.setEnabled(False)
             self.stop_button.setEnabled(True)
             self.cancel_button.setEnabled(True)
             self.progress_bar.setValue(0)
         except Exception as e:
-            self.show_error_message(str(e))
+                self.show_error_message(str(e))
 
     def stop_code(self):
-        # Implement stopping mechanism here
-        # For now, we just disable the stop button
+
         self.stop_button.setEnabled(False)
 
     def cancel_code(self):
@@ -322,7 +320,6 @@ class MainWindow(QMainWindow):
             self.worker_thread.wait()  
             self.worker_thread = None
 
-        # Reset UI
         self.run_button.setEnabled(True)
         self.stop_button.setEnabled(False)
         self.cancel_button.setEnabled(False)
@@ -330,13 +327,13 @@ class MainWindow(QMainWindow):
         self.log_text_edit.append("Object detection process canceled.")
         
     def on_worker_finished(self):
-        # Reset UI
+      
         self.run_button.setEnabled(True)
         self.stop_button.setEnabled(False)
         self.cancel_button.setEnabled(False)
         self.worker_thread = None
 
-        # Load output images
+     
         output_directory = self.output_directory_line_edit.text()
         train_dir = os.path.join(output_directory, "train")
         val_dir = os.path.join(output_directory, "val")
