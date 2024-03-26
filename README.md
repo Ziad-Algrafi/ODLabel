@@ -45,11 +45,6 @@ To run the Autolabel script from the command line:
 1. cd /home/user/Documents/Autolabel/OpenAutolabel.py
 2. python OpenAutolabel.py
 
-### Custom Autolabel
-
-1. cd /home/user/Documents/Autolabel/AutolabelGUI
-2. python Autolabel.py
-
 
 ### Choose open dictionary model to download
 
@@ -61,7 +56,7 @@ To run the Autolabel script from the command line:
 
 ### GUI Features
 
-Select YOLO MODEL>> if you have custom model and you prefer your images to be labelled as how you have configured your model enter the path to your custom model. If you dont have custom model you can choose the open Dictionary model from ultralytics library i have included it in requirements folder
+Select YOLO-WORLD MODEL>> if you have custom model and you prefer your images to be labelled as how you have configured your model enter the path to your custom model. If you dont have custom model you can choose the open Dictionary model from ultralytics library i have included it in requirements folder
 
 Select Images Folder>> select the folder that contains your desired images to be labelled. Note choose the root path for the folder, and Ensure that your images are in one of the following formats: jpg, jpeg, png, or jfif. Also based on the names of your images your labels will correspond to that.
 
