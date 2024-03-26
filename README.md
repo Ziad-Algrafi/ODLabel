@@ -1,14 +1,8 @@
 # Autolabel
 
 # Open Dictionary Autolabel
-![Open-dictionary](https://github.com/Ziad-Algrafi/Autolabel-yolov8/assets/117011801/6c8867f7-e928-4986-abb4-6fe522ff900d)
+![UIaa](https://github.com/Ziad-Algrafi/Autolabel/assets/117011801/39be3604-89cb-46a6-9ea4-643b36d7397e)
 
-
-
-
-
-# Custom Autolabel model
-![GUI](https://github.com/ZiadAlgrafi/Autolabel-yolov8/assets/117011801/e7ba1f79-1808-4927-88d9-7e65c225d3a8)
 
 
 Autolabel is a project designed to simplify the auto-labeling of classes in images using the YOLO model. The provided GUI allows users to choose between a custom YOLO model or Open Dictionary model.
