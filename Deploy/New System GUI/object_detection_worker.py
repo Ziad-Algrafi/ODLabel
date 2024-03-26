@@ -1,4 +1,4 @@
-from PyQt6.QtCore import QThread, pyqtSignal 
+from PyQt6.QtCore import QThread, pyqtSignal
 from PyQt6.QtGui import QPixmap, QImage
 import cv2
 import os
@@ -7,9 +7,7 @@ import json
 from ultralytics import YOLO
 from ultralytics.utils.torch_utils import select_device
 
-def detection(model, img, conf_split, classes):
-    classes_string = ', '.join(classes)
-    model.set_classes(classes_string.split(', '))
+def detection(model, img, conf_split):
     results = model(img, conf=conf_split, imgsz=640)
     img_height, img_width = img.shape[:2]
     annotated_frame = results[0].plot()
@@ -79,7 +77,7 @@ def save_coco_format(detections, out_dir, image_file, img, i, model):
     with open(coco_json_path, "w") as coco_file:
         json.dump(coco_output, coco_file)
 
-        
+
 class ObjectDetectionWorker(QThread):
     """Worker thread to run object detection without blocking the UI."""
     finished = pyqtSignal()
@@ -108,26 +106,33 @@ class ObjectDetectionWorker(QThread):
             return
 
         train_dir = os.path.join(self.output_directory, "train")
-        train_images_dir = os.path.join(train_dir, "images")
+        train_images_dir = os.path.join(train_dir, "detected")
         train_labels_dir = os.path.join(train_dir, "labels")
+        train_original_dir = os.path.join(train_dir, "images")
         os.makedirs(train_images_dir, exist_ok=True)
         os.makedirs(train_labels_dir, exist_ok=True)
+        os.makedirs(train_original_dir, exist_ok=True)
 
         if self.val_split > 0:
             val_dir = os.path.join(self.output_directory, "val")
-            val_images_dir = os.path.join(val_dir, "images")
+            val_images_dir = os.path.join(val_dir, "detected")
             val_labels_dir = os.path.join(val_dir, "labels")
+            val_original_dir = os.path.join(val_dir, "images")
             os.makedirs(val_images_dir, exist_ok=True)
             os.makedirs(val_labels_dir, exist_ok=True)
-            
+            os.makedirs(val_original_dir, exist_ok=True)
+
         model = YOLO(self.model_path)
+        classes_string = ', '.join(self.classes)
+        model.set_classes(classes_string.split(', '))
+
         for i, image_file in enumerate(image_files):
             if not self._is_running:
                 break
 
             img_path = os.path.join(self.images_folder, image_file)
             img = cv2.imread(img_path)
-            detections, annotated_frame = detection(model, img, self.conf_split, self.classes)
+            detections, annotated_frame = detection(model, img, self.conf_split)
 
             self.log_update.emit(f"Results for {image_file}:")
 
@@ -135,16 +140,21 @@ class ObjectDetectionWorker(QThread):
                 output_dir = val_dir
                 images_dir = val_images_dir
                 labels_dir = val_labels_dir
+                original_dir = val_original_dir
             else:
                 output_dir = train_dir
                 images_dir = train_images_dir
                 labels_dir = train_labels_dir
+                original_dir = train_original_dir
 
             output_img = draw_boxes_on_image(img, detections, img_path, annotated_frame, os.path.join(images_dir, image_file))
             if self.output_format == "yolo":
                 save_yolo_format(detections, labels_dir, image_file, img)
             elif self.output_format == "coco":
                 save_coco_format(detections, output_dir, image_file, img, i, model)
+
+            original_img_path = os.path.join(original_dir, image_file)
+            shutil.copy(img_path, original_img_path)
 
             self.progress.emit(int((i + 1) / len(image_files) * 100))
             self.log_update.emit(f"Processed image: {image_file}")
@@ -161,4 +171,4 @@ class ObjectDetectionWorker(QThread):
         self.output_image_signal.emit(pixmap, image_file)
 
     def stop(self):
-        self._is_running = False 
+        self._is_running = False
