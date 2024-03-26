@@ -66,6 +66,8 @@ Enter Classes to detect>> enter the names of the classes you want to detect. Sep
 
 Select Device>> based on the your device is it GPU or CPU. If GPU choose 0. If CPU choose CPU
 
+Output Format>> choose between YOLO or COCO dataset format
+
 Start>> after adding paths and selecting device you can run the program using Run Code button. Wait few seconds based on your device and check the Log Run.
 
 Log Run: will updates the logs of the detction of the model after it finish it will output Results saved in txt files (your directory)
