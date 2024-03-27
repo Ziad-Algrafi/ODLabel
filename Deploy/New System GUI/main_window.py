@@ -12,8 +12,7 @@ from object_detection_worker import ObjectDetectionWorker
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("YOLO Open Dictionary Auto Label")
-        # self.setMinimumSize(1200, 800)
+        self.setWindowTitle("Open Dictionary Auto Label")
         self.setFixedSize(1280, 900)
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
@@ -57,7 +56,7 @@ class MainWindow(QMainWindow):
         output_directory_layout.addWidget(self.output_directory_line_edit)
         output_directory_layout.addWidget(output_directory_button)
         left_panel_layout.addLayout(output_directory_layout)
-        
+
         # Classes
         classes_layout = QHBoxLayout()
         classes_label = QLabel("Classes:")
@@ -71,12 +70,10 @@ class MainWindow(QMainWindow):
         device_layout = QHBoxLayout()
         device_label = QLabel("Select Device:")
         self.device_combo_box = QComboBox()
-     
-        self.device_combo_box.addItems(["CPU", "0"])
+        self.device_combo_box.addItems(["CPU", "GPU"])
         device_layout.addWidget(device_label)
         device_layout.addWidget(self.device_combo_box)
         left_panel_layout.addLayout(device_layout)
-        
 
         # Output Format
         output_format_layout = QHBoxLayout()
@@ -96,28 +93,28 @@ class MainWindow(QMainWindow):
         self.val_slider.setValue(20)
         self.val_slider.setTickPosition(QSlider.TickPosition.TicksBelow)
         self.val_slider.setTickInterval(10)
-        self.val_label = QLabel(f"0.{self.val_slider.value()}0")
+        self.val_label = QLabel(f"{self.val_slider.value() / 100:.2f}")
         self.val_slider.valueChanged.connect(self.update_val_label)
         split_layout.addWidget(split_label)
         split_layout.addWidget(self.val_slider)
         split_layout.addWidget(self.val_label)
         left_panel_layout.addLayout(split_layout)
-        
-        # Train/Val Split
-        split_layout = QHBoxLayout()
-        split_label = QLabel("Minimum Confidence:")
+
+        # Minimum Confidence
+        conf_layout = QHBoxLayout()
+        conf_label = QLabel("Minimum Confidence:")
         self.conf_slider = QSlider(Qt.Orientation.Horizontal)
         self.conf_slider.setMinimum(0)
         self.conf_slider.setMaximum(100)
         self.conf_slider.setValue(20)
         self.conf_slider.setTickPosition(QSlider.TickPosition.TicksBelow)
         self.conf_slider.setTickInterval(10)
-        self.val_label = QLabel(f"0.{self.conf_slider.value()}0")
-        self.conf_slider.valueChanged.connect(self.update_val_label)
-        split_layout.addWidget(split_label)
-        split_layout.addWidget(self.conf_slider)
-        split_layout.addWidget(self.val_label)
-        left_panel_layout.addLayout(split_layout)
+        self.conf_label = QLabel(f"{self.conf_slider.value() / 100:.2f}")
+        self.conf_slider.valueChanged.connect(self.update_conf_label)
+        conf_layout.addWidget(conf_label)
+        conf_layout.addWidget(self.conf_slider)
+        conf_layout.addWidget(self.conf_label)
+        left_panel_layout.addLayout(conf_layout)
 
         # Run/Stop/Cancel Buttons
         self.run_stop_cancel_layout = QHBoxLayout()
@@ -158,7 +155,7 @@ class MainWindow(QMainWindow):
 
         self.input_tab = QWidget()
         self.output_tab = QWidget()
-        
+
         self.tab_widget.addTab(self.input_tab, "Input")
         self.tab_widget.addTab(self.output_tab, "Output")
 
@@ -202,9 +199,10 @@ class MainWindow(QMainWindow):
         val_tab_layout = QVBoxLayout(val_tab)
         val_tab_layout.addWidget(val_scroll_area)
         self.val_photo_grid_layout = val_grid_layout
-        
+
     def update_classes(self, text):
         self.classes = [c.strip() for c in text.split(',')]
+
     def select_model(self):
         file_dialog = QFileDialog()
         file_dialog.setNameFilter("YOLO Model (*.pt)")
@@ -224,7 +222,6 @@ class MainWindow(QMainWindow):
                 self.check_run_button_state()
             except Exception as e:
                 self.show_error_message(str(e))
-
 
     def load_photos(self, folder, tab_type):
         grid_layout = None
@@ -289,10 +286,10 @@ class MainWindow(QMainWindow):
             self.check_run_button_state()
 
     def update_val_label(self, value):
-        if self.sender() == self.val_slider:
-            self.val_label.setText(f"{value / 100:.2f}")
-        elif self.sender() == self.conf_slider:
-            self.val_label.setText(f"{value / 100:.2f}")
+        self.val_label.setText(f"{value / 100:.2f}")
+
+    def update_conf_label(self, value):
+        self.conf_label.setText(f"{value / 100:.2f}")
 
     def check_run_button_state(self):
         model_path = self.model_path_line_edit.text()
@@ -307,7 +304,7 @@ class MainWindow(QMainWindow):
         val_split = self.val_slider.value() / 100
         conf_split = self.conf_slider.value() / 100
         output_format = self.output_format_combo_box.currentText().lower()
-        device = self.device_combo_box.currentText()
+        device = "cpu" if self.device_combo_box.currentText() == "CPU" else "0"
 
         try:
             self.worker_thread = ObjectDetectionWorker(conf_split, model_path, images_folder, output_directory, val_split, output_format, self.classes, device)
@@ -316,15 +313,15 @@ class MainWindow(QMainWindow):
             self.worker_thread.log_update.connect(self.update_log)
             self.worker_thread.start()
 
-            
             self.run_button.setEnabled(False)
             self.stop_button.setEnabled(True)
             self.cancel_button.setEnabled(True)
             self.progress_bar.setValue(0)
         except Exception as e:
-                self.show_error_message(str(e))
+            self.show_error_message(str(e))
 
     def stop_code(self):
+        self.stop_
 
         self.stop_button.setEnabled(False)
 
