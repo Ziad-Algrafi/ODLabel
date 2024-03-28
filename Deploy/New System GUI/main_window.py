@@ -79,7 +79,7 @@ class MainWindow(QMainWindow):
         output_format_layout = QHBoxLayout()
         output_format_label = QLabel("Output Format:")
         self.output_format_combo_box = QComboBox()
-        self.output_format_combo_box.addItems(["YOLO", "COCO"])
+        self.output_format_combo_box.addItems(["YOLO", "COCO", "CSV", "XML"])
         output_format_layout.addWidget(output_format_label)
         output_format_layout.addWidget(self.output_format_combo_box)
         left_panel_layout.addLayout(output_format_layout)
@@ -90,7 +90,7 @@ class MainWindow(QMainWindow):
         self.val_slider = QSlider(Qt.Orientation.Horizontal)
         self.val_slider.setMinimum(0)
         self.val_slider.setMaximum(100)
-        self.val_slider.setValue(20)
+        self.val_slider.setValue(20)  # Set default value to 20
         self.val_slider.setTickPosition(QSlider.TickPosition.TicksBelow)
         self.val_slider.setTickInterval(10)
         self.val_label = QLabel(f"{self.val_slider.value() / 100:.2f}")
@@ -106,7 +106,7 @@ class MainWindow(QMainWindow):
         self.conf_slider = QSlider(Qt.Orientation.Horizontal)
         self.conf_slider.setMinimum(0)
         self.conf_slider.setMaximum(100)
-        self.conf_slider.setValue(20)
+        self.conf_slider.setValue(20)  # Set default value to 20
         self.conf_slider.setTickPosition(QSlider.TickPosition.TicksBelow)
         self.conf_slider.setTickInterval(10)
         self.conf_label = QLabel(f"{self.conf_slider.value() / 100:.2f}")
@@ -302,15 +302,16 @@ class MainWindow(QMainWindow):
         images_folder = self.images_folder_line_edit.text()
         output_directory = self.output_directory_line_edit.text()
         val_split = self.val_slider.value() / 100
-        conf_split = self.conf_slider.value() / 100
-        output_format = self.output_format_combo_box.currentText().lower()
+        conf_threshold = self.conf_slider.value() / 100
+        output_format = self.output_format_combo_box.currentText()
         device = "cpu" if self.device_combo_box.currentText() == "CPU" else "0"
 
         try:
-            self.worker_thread = ObjectDetectionWorker(conf_split, model_path, images_folder, output_directory, val_split, output_format, self.classes, device)
+            self.worker_thread = ObjectDetectionWorker(conf_threshold, model_path, images_folder, output_directory, val_split, output_format, self.classes, device)
             self.worker_thread.finished.connect(self.on_worker_finished)
             self.worker_thread.progress.connect(self.progress_bar.setValue)
             self.worker_thread.log_update.connect(self.update_log)
+            self.worker_thread.output_image_signal.connect(self.on_output_image)
             self.worker_thread.start()
 
             self.run_button.setEnabled(False)
@@ -319,6 +320,16 @@ class MainWindow(QMainWindow):
             self.progress_bar.setValue(0)
         except Exception as e:
             self.show_error_message(str(e))
+
+    def on_output_image(self, pixmap, image_file):
+        label = QLabel()
+        label.setPixmap(pixmap)
+        label.setStyleSheet("border: 1px solid #ccc; padding: 5px;")
+
+        if image_file.startswith("train"):
+            self.train_photo_grid_layout.addWidget(label)
+        elif image_file.startswith("val"):
+            self.val_photo_grid_layout.addWidget(label)
 
     def stop_code(self):
         self.stop_
