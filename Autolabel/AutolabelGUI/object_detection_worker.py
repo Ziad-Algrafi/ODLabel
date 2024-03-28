@@ -6,11 +6,13 @@ import shutil
 import json
 import csv
 import xml.etree.ElementTree as ET
+from xml.dom import minidom
 from ultralytics import YOLO
 from ultralytics.utils.torch_utils import select_device
 
 def detection(model, img, conf_split):
-    results = model(img, conf=conf_split, imgsz=640)
+    img1= img.copy()
+    results = model(img1, conf=conf_split, imgsz=640)
     img_height, img_width = img.shape[:2]
     annotated_frame = results[0].plot(probs=False)
 
@@ -20,12 +22,12 @@ def detection(model, img, conf_split):
         clss = results[0].boxes.cls.int().cpu().tolist()
         for box, track_cls in zip(boxes, clss):
             x, y, w, h = box
-            cls = track_cls
+            cls_id = track_cls
             x_scaled = x * img_width
             y_scaled = y * img_height
             w_scaled = w * img_width
             h_scaled = h * img_height
-            detections.append((cls, x_scaled, y_scaled, w_scaled, h_scaled))
+            detections.append((cls_id, x_scaled, y_scaled, w_scaled, h_scaled))
 
     return detections, annotated_frame
 
@@ -39,12 +41,12 @@ def draw_boxes_on_image(image_path, annotated_frame, output_path=None):
 def save_yolo_format(detections, out_dir, image_file, img):
     result_txt_path = os.path.join(out_dir, f"{os.path.splitext(image_file)[0]}.txt")
     with open(result_txt_path, 'w') as txt_file:
-        for cls, x_scaled, y_scaled, w_scaled, h_scaled in detections:
+        for cls_id, x_scaled, y_scaled, w_scaled, h_scaled in detections:
             normalized_x = x_scaled / img.shape[1]
             normalized_y = y_scaled / img.shape[0]
             normalized_w = w_scaled / img.shape[1]
             normalized_h = h_scaled / img.shape[0]
-            txt_file.write(f"{cls} {normalized_x} {normalized_y} {normalized_w} {normalized_h}\n")
+            txt_file.write(f"{cls_id} {normalized_x} {normalized_y} {normalized_w} {normalized_h}\n")
 
 def save_coco_format(detections, image_file, img, i, coco_output):
     coco_output["images"].append({
@@ -54,7 +56,7 @@ def save_coco_format(detections, image_file, img, i, coco_output):
         "width": img.shape[1]
     })
     annotation_id = len(coco_output["annotations"]) + 1
-    for cls, x_scaled, y_scaled, w_scaled, h_scaled in detections:
+    for cls_id, x_scaled, y_scaled, w_scaled, h_scaled in detections:
         x_min = int(x_scaled - w_scaled / 2)
         y_min = int(y_scaled - h_scaled / 2)
         width = int(w_scaled)
@@ -62,7 +64,7 @@ def save_coco_format(detections, image_file, img, i, coco_output):
         coco_output["annotations"].append({
             "id": annotation_id,
             "image_id": i,
-            "category_id": int(cls),
+            "category_id": int(cls_id),
             "bbox": [x_min, y_min, width, height],
             "area": width * height,
             "iscrowd": 0
@@ -70,9 +72,9 @@ def save_coco_format(detections, image_file, img, i, coco_output):
         annotation_id += 1
 
 def save_csv_format(detections, image_file, img, class_names, csv_writer):
-    for cls, x_scaled, y_scaled, w_scaled, h_scaled in detections:
+    for cls_id, x_scaled, y_scaled, w_scaled, h_scaled in detections:
         csv_writer.writerow([
-            class_names[int(cls)],
+            class_names[int(cls_id)],
             float(x_scaled - w_scaled / 2),
             float(y_scaled - h_scaled / 2),
             float(w_scaled),
@@ -82,24 +84,41 @@ def save_csv_format(detections, image_file, img, class_names, csv_writer):
             int(img.shape[0])
         ])
 
-def save_xml_format(detections, out_dir, image_file, img):
+def save_xml_format(self, detections, out_dir, image_file, images_dir, img):
     result_xml_path = os.path.join(out_dir, f"{os.path.splitext(image_file)[0]}.xml")
+
     root = ET.Element('annotation')
+
+    ET.SubElement(root, 'folder').text = out_dir 
     ET.SubElement(root, 'filename').text = image_file
+    ET.SubElement(root, 'path').text = os.path.join(images_dir, image_file)  
+
+    source_element = ET.SubElement(root, 'source')
+    ET.SubElement(source_element, 'database').text = 'Unspecified'
+
     size_element = ET.SubElement(root, 'size')
     ET.SubElement(size_element, 'width').text = str(img.shape[1])
     ET.SubElement(size_element, 'height').text = str(img.shape[0])
     ET.SubElement(size_element, 'depth').text = str(img.shape[2])
-    for cls, x_scaled, y_scaled, w_scaled, h_scaled in detections:
+
+    for cls_id, x_scaled, y_scaled, w_scaled, h_scaled in detections:
         object_element = ET.SubElement(root, 'object')
-        ET.SubElement(object_element, 'name').text = str(cls)
+        ET.SubElement(object_element, 'name').text = str(self.classes[cls_id])  
+        ET.SubElement(object_element, 'pose').text = 'Unspecified'
+        ET.SubElement(object_element, 'truncated').text = '0'
+        ET.SubElement(object_element, 'difficult').text = '0'
+
         bndbox_element = ET.SubElement(object_element, 'bndbox')
         ET.SubElement(bndbox_element, 'xmin').text = str(int(x_scaled - w_scaled / 2))
         ET.SubElement(bndbox_element, 'ymin').text = str(int(y_scaled - h_scaled / 2))
         ET.SubElement(bndbox_element, 'xmax').text = str(int(x_scaled + w_scaled / 2))
         ET.SubElement(bndbox_element, 'ymax').text = str(int(y_scaled + h_scaled / 2))
-    tree = ET.ElementTree(root)
-    tree.write(result_xml_path)        
+
+    xml_str = ET.tostring(root, encoding='utf-8', method='xml')
+    pretty_xml_str = minidom.parseString(xml_str).toprettyxml(indent="  ")
+    pretty_xml_str = '\n'.join(pretty_xml_str.split('\n')[1:])
+    with open(result_xml_path, 'w') as f:
+        f.write(pretty_xml_str)
 
 class ObjectDetectionWorker(QThread):
     """Worker thread to run object detection without blocking the UI."""
@@ -156,14 +175,14 @@ class ObjectDetectionWorker(QThread):
             "licenses": [],
             "images": [],
             "annotations": [],
-            "categories": [{"id": i, "name": cls, "supercategory": cls} for i, cls in enumerate(self.classes)]
+            "categories": [{"id": i, "name": cls_name, "supercategory": cls_name} for i, cls_name in enumerate(self.classes)]
         }
         val_coco_output = {
             "info": {},
             "licenses": [],
             "images": [],
             "annotations": [],
-            "categories": [{"id": i, "name": cls, "supercategory": cls} for i, cls in enumerate(self.classes)]
+            "categories": [{"id": i, "name": cls_name, "supercategory": cls_name} for i, cls_name in enumerate(self.classes)]
         }
 
         for i, image_file in enumerate(image_files):
@@ -215,7 +234,7 @@ class ObjectDetectionWorker(QThread):
                 else:
                     save_csv_format(detections, image_file, img, self.classes, train_csv_writer)
             elif self.output_format == "XML":
-                save_xml_format(detections, labels_dir, image_file, img)
+                save_xml_format(self, detections, labels_dir, image_file, images_dir, img)
 
             original_img_path = os.path.join(original_dir, image_file)
             shutil.copy(img_path, original_img_path)
