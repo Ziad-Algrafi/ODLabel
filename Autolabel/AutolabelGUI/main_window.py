@@ -90,7 +90,7 @@ class MainWindow(QMainWindow):
         self.val_slider = QSlider(Qt.Orientation.Horizontal)
         self.val_slider.setMinimum(0)
         self.val_slider.setMaximum(100)
-        self.val_slider.setValue(20)  # Set default value to 20
+        self.val_slider.setValue(20) 
         self.val_slider.setTickPosition(QSlider.TickPosition.TicksBelow)
         self.val_slider.setTickInterval(10)
         self.val_label = QLabel(f"{self.val_slider.value() / 100:.2f}")
@@ -106,7 +106,7 @@ class MainWindow(QMainWindow):
         self.conf_slider = QSlider(Qt.Orientation.Horizontal)
         self.conf_slider.setMinimum(0)
         self.conf_slider.setMaximum(100)
-        self.conf_slider.setValue(20)  # Set default value to 20
+        self.conf_slider.setValue(20) 
         self.conf_slider.setTickPosition(QSlider.TickPosition.TicksBelow)
         self.conf_slider.setTickInterval(10)
         self.conf_label = QLabel(f"{self.conf_slider.value() / 100:.2f}")
