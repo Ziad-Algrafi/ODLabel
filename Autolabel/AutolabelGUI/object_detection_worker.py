@@ -7,7 +7,7 @@ import json
 import csv
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
-from ultralytics import YOLO
+from ultralytics import YOLOWorld
 from ultralytics.utils.torch_utils import select_device
 
 def infer(model, img, conf_threshold, log_update, image_file):
@@ -230,7 +230,7 @@ class ObjectDetectionWorker(QThread):
             os.makedirs(train_labels_dir, exist_ok=True)
             os.makedirs(train_original_dir, exist_ok=True)
 
-        model = YOLO(self.model_path)
+        model = YOLOWorld(self.model_path)
         model.set_classes(self.classes)
 
         train_coco_output = {
