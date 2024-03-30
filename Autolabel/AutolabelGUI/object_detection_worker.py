@@ -17,6 +17,7 @@ def infer(model, img, conf_threshold, log_update, image_file):
     results = model(img, conf=conf_threshold, imgsz=640)
 
     detections = []
+    names = model.names 
     if results[0].boxes is not None:
         log_update.emit(f"Results for {image_file}:")
         boxes = results[0].boxes.xywhn.cpu()
@@ -24,11 +25,13 @@ def infer(model, img, conf_threshold, log_update, image_file):
         for box, class_id in zip(boxes, clss):
             x, y, w, h = box
             cls_id = class_id
+            class_name = names[cls_id]
             x_scaled = x * img_width
             y_scaled = y * img_height
             w_scaled = w * img_width
             h_scaled = h * img_height
-            detections.append((cls_id, x_scaled, y_scaled, w_scaled, h_scaled))
+
+            detections.append((cls_id, x_scaled, y_scaled, w_scaled, h_scaled, class_name))
     else:
         log_update.emit(f"No Results for {image_file}:")
 
@@ -49,8 +52,8 @@ def slice_and_infer(model, img, conf_threshold, log_update, image_file, slice_si
             num_slices += 1
 
     log_update.emit(f"Number of slices: {num_slices}")
-
     detections = []
+    names = model.names 
     for slice, x_offset, y_offset, slice_width, slice_height in slices:
         results = model(slice, conf=conf_threshold, imgsz=slice_size)[0]
         if results.boxes is not None:
@@ -58,6 +61,7 @@ def slice_and_infer(model, img, conf_threshold, log_update, image_file, slice_si
             for box in results.boxes:
                 x, y, w, h = box.xywhn[0].tolist()
                 cls_id = box.cls[0].int().item()
+                class_name = names[cls_id]
                 x_pixel = x * slice_width
                 y_pixel = y * slice_height
                 w_pixel = w * slice_width
@@ -68,25 +72,26 @@ def slice_and_infer(model, img, conf_threshold, log_update, image_file, slice_si
                 y_scaled = y_global
                 w_scaled = w_pixel
                 h_scaled = h_pixel
-                detections.append((cls_id, x_scaled, y_scaled, w_scaled, h_scaled))
+                detections.append((cls_id, x_scaled, y_scaled, w_scaled, h_scaled, class_name))
         else:
             log_update.emit(f"No Results for {image_file}:")
 
     return detections, annotated_frame
 
-def draw_boxes_on_image(model, annotated_frame, detections, image_path, output_path=None, log_update=None):
+def draw_boxes_on_image(annotated_frame, detections, image_path, output_path=None, log_update=None):
     if output_path is None:
         output_path = os.path.splitext(image_path)[0] + '_with_boxes.jpg'
 
-    for cls_id, x_scaled, y_scaled, w_scaled, h_scaled in detections:
+    for cls_id, x_scaled, y_scaled, w_scaled, h_scaled, class_name in detections:
         x1 = int(x_scaled - w_scaled / 2)
         y1 = int(y_scaled - h_scaled / 2)
         x2 = int(x_scaled + w_scaled / 2)
         y2 = int(y_scaled + h_scaled / 2)
-        label = f"{model.names[int(cls_id)]}"
+        label = class_name
         cv.rectangle(annotated_frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
         cv.putText(annotated_frame, label, (x1, y1 - 5), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-        cv.imwrite(output_path, annotated_frame)
+
+    cv.imwrite(output_path, annotated_frame)
     if log_update:
         log_update.emit(f"Saved image with bounding boxes to {output_path}")
 
@@ -95,7 +100,7 @@ def draw_boxes_on_image(model, annotated_frame, detections, image_path, output_p
 def save_yolo_format(detections, out_dir, image_file, img):
     result_txt_path = os.path.join(out_dir, f"{os.path.splitext(image_file)[0]}.txt")
     with open(result_txt_path, 'w') as txt_file:
-        for cls_id, x_scaled, y_scaled, w_scaled, h_scaled in detections:
+        for cls_id, x_scaled, y_scaled, w_scaled, h_scaled, class_name in detections:
             normalized_x = x_scaled / img.shape[1]
             normalized_y = y_scaled / img.shape[0]
             normalized_w = w_scaled / img.shape[1]
@@ -110,7 +115,7 @@ def save_coco_format(detections, image_file, img, i, coco_output):
         "width": img.shape[1]
     })
     annotation_id = len(coco_output["annotations"]) + 1
-    for cls_id, x_scaled, y_scaled, w_scaled, h_scaled in detections:
+    for cls_id, x_scaled, y_scaled, w_scaled, h_scaled, class_name in detections:
         x_min = int(x_scaled - w_scaled / 2)
         y_min = int(y_scaled - h_scaled / 2)
         width = int(w_scaled)
@@ -125,10 +130,10 @@ def save_coco_format(detections, image_file, img, i, coco_output):
         })
         annotation_id += 1
 
-def save_csv_format(detections, image_file, img, class_names, csv_writer):
-    for cls_id, x_scaled, y_scaled, w_scaled, h_scaled in detections:
+def save_csv_format(detections, image_file, img,  csv_writer):
+    for cls_id, x_scaled, y_scaled, w_scaled, h_scaled, class_name in detections:
         csv_writer.writerow([
-            class_names[int(cls_id)],
+            class_name,
             float(x_scaled - w_scaled / 2),
             float(y_scaled - h_scaled / 2),
             float(w_scaled),
@@ -155,7 +160,7 @@ def save_xml_format(self, detections, out_dir, image_file, images_dir, img):
     ET.SubElement(size_element, 'height').text = str(img.shape[0])
     ET.SubElement(size_element, 'depth').text = str(img.shape[2])
 
-    for cls_id, x_scaled, y_scaled, w_scaled, h_scaled in detections:
+    for cls_id, x_scaled, y_scaled, w_scaled, h_scaled, class_name in detections:
         object_element = ET.SubElement(root, 'object')
         ET.SubElement(object_element, 'name').text = str(self.classes[cls_id])  
         ET.SubElement(object_element, 'pose').text = 'Unspecified'
@@ -283,7 +288,7 @@ class ObjectDetectionWorker(QThread):
                         train_csv_writer.writerow(['label_name', 'bbox_x', 'bbox_y', 'bbox_width', 'bbox_height', 'image_name', 'image_width', 'image_height'])
 
             if detections:
-                output_img = draw_boxes_on_image(model, annotated_frame, detections, img_path, os.path.join(images_dir, image_file))
+                output_img = draw_boxes_on_image(annotated_frame, detections, img_path, os.path.join(images_dir, image_file))
 
                 if self.output_format == "YOLO":
                     save_yolo_format(detections, labels_dir, image_file, img)
@@ -291,9 +296,9 @@ class ObjectDetectionWorker(QThread):
                     save_coco_format(detections, image_file, img, i, coco_output)
                 elif self.output_format == "CSV":
                     if i < num_val_images:
-                        save_csv_format(detections, image_file, img, self.classes, val_csv_writer)
+                        save_csv_format(detections, image_file, img, val_csv_writer)
                     else:
-                        save_csv_format(detections, image_file, img, self.classes, train_csv_writer)
+                        save_csv_format(detections, image_file, img, train_csv_writer)
                 elif self.output_format == "XML":
                     save_xml_format(self, detections, labels_dir, image_file, images_dir, img)
 
