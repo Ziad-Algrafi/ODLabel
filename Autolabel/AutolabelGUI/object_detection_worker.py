@@ -10,32 +10,86 @@ from xml.dom import minidom
 from ultralytics import YOLO
 from ultralytics.utils.torch_utils import select_device
 
-def detection(model, img, conf_split):
-    img1= img.copy()
-    results = model(img1, conf=conf_split, imgsz=640)
+def infer(model, img, conf_threshold, log_update, image_file):
+
+    annotated_frame= img.copy()
     img_height, img_width = img.shape[:2]
-    annotated_frame = results[0].plot(probs=False)
+    results = model(img, conf=conf_threshold, imgsz=640)
 
     detections = []
     if results[0].boxes is not None:
+        log_update.emit(f"Results for {image_file}:")
         boxes = results[0].boxes.xywhn.cpu()
         clss = results[0].boxes.cls.int().cpu().tolist()
-        for box, track_cls in zip(boxes, clss):
+        for box, class_id in zip(boxes, clss):
             x, y, w, h = box
-            cls_id = track_cls
+            cls_id = class_id
             x_scaled = x * img_width
             y_scaled = y * img_height
             w_scaled = w * img_width
             h_scaled = h * img_height
             detections.append((cls_id, x_scaled, y_scaled, w_scaled, h_scaled))
+    else:
+        log_update.emit(f"No Results for {image_file}:")
 
     return detections, annotated_frame
 
-def draw_boxes_on_image(image_path, annotated_frame, output_path=None):
+def slice_and_infer(model, img, conf_threshold, log_update, image_file, slice_size):
+    annotated_frame = img.copy()
+    height, width = img.shape[:2]
+    slices = []
+    num_slices = 0
+
+    for y in range(0, height, slice_size // 2):
+        for x in range(0, width, slice_size // 2):
+            slice_y = min(y + slice_size, height)
+            slice_x = min(x + slice_size, width)
+            slice = img[y:slice_y, x:slice_x]
+            slices.append((slice, x, y, slice_x - x, slice_y - y))
+            num_slices += 1
+
+    log_update.emit(f"Number of slices: {num_slices}")
+
+    detections = []
+    for slice, x_offset, y_offset, slice_width, slice_height in slices:
+        results = model(slice, conf=conf_threshold, imgsz=slice_size)[0]
+        if results.boxes is not None:
+            log_update.emit(f"Results for {image_file}:")
+            for box in results.boxes:
+                x, y, w, h = box.xywhn[0].tolist()
+                cls_id = box.cls[0].int().item()
+                x_pixel = x * slice_width
+                y_pixel = y * slice_height
+                w_pixel = w * slice_width
+                h_pixel = h * slice_height
+                x_global = x_pixel + x_offset
+                y_global = y_pixel + y_offset
+                x_scaled = x_global
+                y_scaled = y_global
+                w_scaled = w_pixel
+                h_scaled = h_pixel
+                detections.append((cls_id, x_scaled, y_scaled, w_scaled, h_scaled))
+        else:
+            log_update.emit(f"No Results for {image_file}:")
+
+    return detections, annotated_frame
+
+def draw_boxes_on_image(model, annotated_frame, detections, image_path, output_path=None, log_update=None):
     if output_path is None:
         output_path = os.path.splitext(image_path)[0] + '_with_boxes.jpg'
-    cv.imwrite(output_path, annotated_frame)
-    print(f"Saved image with bounding boxes to {output_path}")
+
+    for cls_id, x_scaled, y_scaled, w_scaled, h_scaled in detections:
+        x1 = int(x_scaled - w_scaled / 2)
+        y1 = int(y_scaled - h_scaled / 2)
+        x2 = int(x_scaled + w_scaled / 2)
+        y2 = int(y_scaled + h_scaled / 2)
+        label = f"{model.names[int(cls_id)]}"
+        cv.rectangle(annotated_frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+        cv.putText(annotated_frame, label, (x1, y1 - 5), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+        cv.imwrite(output_path, annotated_frame)
+    if log_update:
+        log_update.emit(f"Saved image with bounding boxes to {output_path}")
+
     return annotated_frame
 
 def save_yolo_format(detections, out_dir, image_file, img):
@@ -127,13 +181,15 @@ class ObjectDetectionWorker(QThread):
     log_update = pyqtSignal(str)
     output_image_signal = pyqtSignal(QPixmap, str)
 
-    def __init__(self, conf_split, model_path, images_folder, output_directory, val_split, output_format, classes, device):
+    def __init__(self, conf_threshold, model_path, images_folder, output_directory, val_split, output_format, classes, device, use_sahi, slice_size):
         super().__init__()
         self.model_path = model_path
         self.images_folder = images_folder
         self.output_directory = output_directory
+        self.use_sahi = use_sahi
+        self.slice_size = slice_size
         self.val_split = val_split
-        self.conf_split = conf_split
+        self.conf_threshold = conf_threshold
         self.output_format = output_format
         self.classes = classes
         self.device = device
@@ -151,21 +207,23 @@ class ObjectDetectionWorker(QThread):
 
         num_val_images = int(len(image_files) * self.val_split)
 
-        train_dir = os.path.join(self.output_directory, "train")
-        train_images_dir = os.path.join(train_dir, "detected")
-        train_labels_dir = os.path.join(train_dir, "labels")
-        train_original_dir = os.path.join(train_dir, "images")
-        os.makedirs(train_images_dir, exist_ok=True)
-        os.makedirs(train_labels_dir, exist_ok=True)
-        os.makedirs(train_original_dir, exist_ok=True)
+        if num_val_images > 0:
+            val_dir = os.path.join(self.output_directory, "val")
+            val_images_dir = os.path.join(val_dir, "detected")
+            val_labels_dir = os.path.join(val_dir, "labels")
+            val_original_dir = os.path.join(val_dir, "images")
+            os.makedirs(val_images_dir, exist_ok=True)
+            os.makedirs(val_labels_dir, exist_ok=True)
+            os.makedirs(val_original_dir, exist_ok=True)
 
-        val_dir = os.path.join(self.output_directory, "val")
-        val_images_dir = os.path.join(val_dir, "detected")
-        val_labels_dir = os.path.join(val_dir, "labels")
-        val_original_dir = os.path.join(val_dir, "images")
-        os.makedirs(val_images_dir, exist_ok=True)
-        os.makedirs(val_labels_dir, exist_ok=True)
-        os.makedirs(val_original_dir, exist_ok=True)
+        if num_val_images < len(image_files):
+            train_dir = os.path.join(self.output_directory, "train")
+            train_images_dir = os.path.join(train_dir, "detected")
+            train_labels_dir = os.path.join(train_dir, "labels")
+            train_original_dir = os.path.join(train_dir, "images")
+            os.makedirs(train_images_dir, exist_ok=True)
+            os.makedirs(train_labels_dir, exist_ok=True)
+            os.makedirs(train_original_dir, exist_ok=True)
 
         model = YOLO(self.model_path)
         model.set_classes(self.classes)
@@ -191,9 +249,11 @@ class ObjectDetectionWorker(QThread):
 
             img_path = os.path.join(self.images_folder, image_file)
             img = cv.imread(img_path)
-            detections, annotated_frame = detection(model, img, self.conf_split)
 
-            self.log_update.emit(f"Results for {image_file}:")
+            if self.use_sahi:
+                detections, annotated_frame = slice_and_infer(model, img, self.conf_threshold, self.log_update, image_file, self.slice_size)
+            else:
+                detections, annotated_frame = infer(model, img, self.conf_threshold, self.log_update, image_file)
 
             if i < num_val_images:
                 output_dir = val_dir
@@ -219,38 +279,42 @@ class ObjectDetectionWorker(QThread):
                     train_csv_file_path = os.path.join(train_labels_dir, "annotations.csv")
                     train_csv_file = open(train_csv_file_path, 'a', newline='')
                     train_csv_writer = csv.writer(train_csv_file)
-                    if i == num_val_images: 
+                    if i == num_val_images:
                         train_csv_writer.writerow(['label_name', 'bbox_x', 'bbox_y', 'bbox_width', 'bbox_height', 'image_name', 'image_width', 'image_height'])
 
-            output_img = draw_boxes_on_image(img_path, annotated_frame, os.path.join(images_dir, image_file))
+            if detections:
+                output_img = draw_boxes_on_image(model, annotated_frame, detections, img_path, os.path.join(images_dir, image_file))
 
-            if self.output_format == "YOLO":
-                save_yolo_format(detections, labels_dir, image_file, img)
-            elif self.output_format == "COCO":
-                save_coco_format(detections, image_file, img, i, coco_output)
-            elif self.output_format == "CSV":
-                if i < num_val_images:
-                    save_csv_format(detections, image_file, img, self.classes, val_csv_writer)
-                else:
-                    save_csv_format(detections, image_file, img, self.classes, train_csv_writer)
-            elif self.output_format == "XML":
-                save_xml_format(self, detections, labels_dir, image_file, images_dir, img)
+                if self.output_format == "YOLO":
+                    save_yolo_format(detections, labels_dir, image_file, img)
+                elif self.output_format == "COCO":
+                    save_coco_format(detections, image_file, img, i, coco_output)
+                elif self.output_format == "CSV":
+                    if i < num_val_images:
+                        save_csv_format(detections, image_file, img, self.classes, val_csv_writer)
+                    else:
+                        save_csv_format(detections, image_file, img, self.classes, train_csv_writer)
+                elif self.output_format == "XML":
+                    save_xml_format(self, detections, labels_dir, image_file, images_dir, img)
 
-            original_img_path = os.path.join(original_dir, image_file)
-            shutil.copy(img_path, original_img_path)
+                original_img_path = os.path.join(original_dir, image_file)
+                shutil.copy(img_path, original_img_path)
+
+                self.emit_output_image(output_img, image_file)
 
             self.progress.emit(int((i + 1) / len(image_files) * 100))            
             self.log_update.emit(f"Processed image: {image_file}")
-            self.emit_output_image(output_img, image_file)
 
         if self.output_format == "COCO":
-            train_coco_json_path = os.path.join(train_labels_dir, "coco_output.json")
-            with open(train_coco_json_path, "w") as train_coco_file:
-                json.dump(train_coco_output, train_coco_file)
+            if num_val_images > 0:
+                val_coco_json_path = os.path.join(val_labels_dir, "coco_output.json")
+                with open(val_coco_json_path, "w") as val_coco_file:
+                    json.dump(val_coco_output, val_coco_file)
 
-            val_coco_json_path = os.path.join(val_labels_dir, "coco_output.json")
-            with open(val_coco_json_path, "w") as val_coco_file:
-                json.dump(val_coco_output, val_coco_file)
+            if num_val_images < len(image_files):
+                train_coco_json_path = os.path.join(train_labels_dir, "coco_output.json")
+                with open(train_coco_json_path, "w") as train_coco_file:
+                    json.dump(train_coco_output, train_coco_file)
 
         if self.output_format == "CSV":
             if 'val_csv_file' in locals():
@@ -258,7 +322,7 @@ class ObjectDetectionWorker(QThread):
             if 'train_csv_file' in locals():
                 train_csv_file.close()
 
-        self.log_update.emit("Object detection completed.")
+        self.log_update.emit("Results Finished.")
         self.finished.emit()
 
     def emit_output_image(self, image, image_file):
@@ -267,6 +331,3 @@ class ObjectDetectionWorker(QThread):
         image = QImage(image.data, image.shape[1], image.shape[0], QImage.Format.Format_RGB888)
         pixmap = QPixmap.fromImage(image)
         self.output_image_signal.emit(pixmap, image_file)
-
-    def stop(self):
-        self._is_running = False
