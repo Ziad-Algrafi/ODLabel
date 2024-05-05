@@ -1,4 +1,3 @@
-
 ![output](https://github.com/Ziad-Algrafi/ODLabel/assets/117011801/9fb27b28-eab1-4edb-9c1d-0535c4e0e99a)
 
 # ODLabel
@@ -26,7 +25,7 @@ pip install odlabel
 
 ## Usage
 
-To launch the OD-Labeler application, run the following command:
+To launch the ODLabeler application, run the following command:
 
 ```bash
 odlabel
@@ -39,6 +38,19 @@ odlabel
 5. Configure additional options such as SAHI, device type, output format, train/validation split, confidence level, and NMS threshold.
 6. Click the "Start" button to begin the labeling process.
 7. Monitor the progress and view the detection results in the application.
+
+## Model
+
+| Model Type      | mAP  | mAP50 | mAP75 | Model                                                                                         |
+| --------------- | ---- | ----- | ----- | --------------------------------------------------------------------------------------------- |
+| yolov8s-world   | 37.4 | 52.0  | 40.6  | [Download](https://github.com/ultralytics/assets/releases/download/v8.2.0/yolov8s-world.pt)   |
+| yolov8s-worldv2 | 37.7 | 52.2  | 41.0  | [Download](https://github.com/ultralytics/assets/releases/download/v8.2.0/yolov8s-worldv2.pt) |
+| yolov8m-world   | 42.0 | 57.0  | 45.6  | [Download](https://github.com/ultralytics/assets/releases/download/v8.2.0/yolov8m-world.pt)   |
+| yolov8m-worldv2 | 43.0 | 58.4  | 46.8  | [Download](https://github.com/ultralytics/assets/releases/download/v8.2.0/yolov8m-worldv2.pt) |
+| yolov8l-world   | 45.7 | 61.3  | 49.8  | [Download](https://github.com/ultralytics/assets/releases/download/v8.2.0/yolov8l-world.pt)   |
+| yolov8l-worldv2 | 45.8 | 61.3  | 49.8  | [Download](https://github.com/ultralytics/assets/releases/download/v8.2.0/yolov8l-worldv2.pt) |
+| yolov8x-world   | 47.0 | 63.0  | 51.2  | [Download](https://github.com/ultralytics/assets/releases/download/v8.2.0/yolov8x-world.pt)   |
+| yolov8x-worldv2 | 47.1 | 62.8  | 51.4  | [Download](https://github.com/ultralytics/assets/releases/download/v8.2.0/yolov8x-worldv2.pt) |
 
 ## Update
 
