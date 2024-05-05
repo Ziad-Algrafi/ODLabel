@@ -25,7 +25,7 @@ pip install odlabel
 
 ## Usage
 
-To launch the ODLabeler application, run the following command:
+To launch the ODLabel application, run the following command:
 
 ```bash
 odlabel
