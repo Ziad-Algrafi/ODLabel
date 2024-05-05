@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="odlabel",
-    version="0.7.19",
+    version="0.7.20",
     packages=find_packages(),
     include_package_data=True,
     install_requires=[
