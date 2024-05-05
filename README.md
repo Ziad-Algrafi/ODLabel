@@ -1,3 +1,6 @@
+
+![run test](https://github.com/Ziad-Algrafi/ODLabel/assets/117011801/91cb2a0f-66d3-4371-9b0b-a44b76047a53)
+
 # ODLabel
 
 ODLabel (Open Dictionary Labeler) is a powerful tool for zero-shot object detection, labeling and visualization. It provides an intuitive graphical user interface for labeling objects in images using the YOLO-World model and supports various output formats such as YOLO, COCO, CSV, and XML.
