@@ -58,7 +58,7 @@ The following figures are available in the dashboard:
 1. Format and Instances Chart: This chart combines two visualizations in one figure:
 
 A bar chart displaying the total number of input images.
-A bar chart showing the distribution of image file formats (e.g., .jpg, .png, .jfif).
+A bar chart showing the distribution of image file formats (e.g., .jpg, .jpeg, .png, jfif).
 
 2. Image Resolution Distribution: A histogram that illustrates the distribution of image resolutions across the input dataset. The x-axis represents the image width, and the bars show the frequency of images within each resolution bin.
 3. Image Quality: A bar chart depicting the number of images falling into different quality categories:
