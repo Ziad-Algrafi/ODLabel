@@ -63,10 +63,10 @@ A bar chart showing the distribution of image file formats (e.g., .jpg, .png, .j
 2. Image Resolution Distribution: A histogram that illustrates the distribution of image resolutions across the input dataset. The x-axis represents the image width, and the bars show the frequency of images within each resolution bin.
 3. Image Quality: A bar chart depicting the number of images falling into different quality categories:
 
-Blurred images
-Grayscale images
-Black and white images
-Corrupted or invalid images
+- Blurred images
+- Grayscale images
+- Black and white images
+- Corrupted or invalid images
 
 4. Color Space Distribution: A 3D scatter plot that visualizes the color space distribution of the input images. Each point in the plot represents a unique color space, with its position determined by the mean values of the red, green, and blue channels. The size of the points indicates the frequency of that particular color space in the dataset.
 5. Detected Object Count: A bar chart displaying the count of detected objects for each class. The first bar represents the total number of input images, while the subsequent bars show the number of instances for each object class detected across the dataset.
