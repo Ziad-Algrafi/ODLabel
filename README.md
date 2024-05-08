@@ -113,6 +113,8 @@ ODLabel is built using the following open-source libraries:
 - [OpenCV](https://opencv.org)
 - [PyTorch](https://pytorch.org)
 
+ODLabel runs locally on your machine and does not collect or send any data externally. Your data remains private and secure within your local environment.
+
 ## Contact
 
 For any questions or inquiries, please contact the maintainer at - ZiadAlgrafi@gmail.com.
