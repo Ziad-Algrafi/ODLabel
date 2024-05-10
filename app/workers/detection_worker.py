@@ -45,6 +45,7 @@ class ObjectDetectionWorker(threading.Thread):
         self._terminate_event = threading.Event()
         self.train_detections = []
         self.val_detections = []
+        self.class_colors = {}
 
         self.log_queue: Union[Queue, None] = None
         self.output_image_queue: Union[Queue, None] = None
@@ -198,7 +199,7 @@ class ObjectDetectionWorker(threading.Thread):
             output_img = draw_boxes_on_image(
                 annotated_frame,
                 detections,
-                img,
+                self.class_colors,
                 os.path.join(detected_image_dir, image_file),
             )
 
