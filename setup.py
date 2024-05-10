@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="odlabel",
-    version="0.7.26.1",
+    version="0.7.26.2",
     packages=find_packages(),
     include_package_data=True,
     install_requires=[
