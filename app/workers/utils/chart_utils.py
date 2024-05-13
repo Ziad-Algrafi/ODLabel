@@ -235,9 +235,9 @@ def output_charts(detections, num_images):
     ax_conf.set_ylabel("Frequency")
     ax_conf.set_title("Detection Confidence Histogram", y=1.05)
 
-    # Labelism: Bounding Box Chart
-    fig_labelism = Figure(figsize=(4, 3), dpi=100)
-    ax_labelism = fig_labelism.add_subplot(1, 1, 1)
+    # Spatial Distribution of Objects
+    fig_labels = Figure(figsize=(4, 3), dpi=100)
+    ax_labels = fig_labels.add_subplot(1, 1, 1)
 
     max_count = max(labelism_counts.values())
     cmap = plt.get_cmap("Reds")
@@ -251,13 +251,13 @@ def output_charts(detections, num_images):
             edgecolor=cmap(count / max_count),
             facecolor="none",
         )
-        ax_labelism.add_patch(rect)
+        ax_labels.add_patch(rect)
 
-    ax_labelism.set_xlim(0, 1)
-    ax_labelism.set_ylim(0, 1)
-    ax_labelism.set_title("Labelism: Bounding Boxes", y=1.05)
-    ax_labelism.set_xlabel("X")
-    ax_labelism.set_ylabel("Y")
+    ax_labels.set_xlim(0, 1)
+    ax_labels.set_ylim(0, 1)
+    ax_labels.set_title("Spatial Distribution of Objects", y=1.05)
+    ax_labels.set_xlabel("X")
+    ax_labels.set_ylabel("Y")
 
     # Heatmap of Detection
     fig_heatmap = Figure(figsize=(4, 3), dpi=100)
@@ -278,7 +278,7 @@ def output_charts(detections, num_images):
     ax_heatmap.set_xlabel("X")
     ax_heatmap.set_ylabel("Y")
 
-    return fig_count, fig_conf, fig_labelism, fig_heatmap
+    return fig_count, fig_conf, fig_labels, fig_heatmap
 
 
 def display_chart(fig, frame, row, col):
