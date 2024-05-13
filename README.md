@@ -80,7 +80,7 @@ The following figures are available in the dashboard:
 
 6. **Detection Confidence Histogram:** A histogram that illustrates the distribution of detection confidence scores. The x-axis represents the confidence level, and the bars show the frequency of detections within each confidence bin.
 
-7. **Labelism: Bounding Boxes:** A chart that visualizes the bounding boxes of detected objects. Each bounding box is represented by a rectangle, with the color intensity indicating the degree of overlap with other bounding boxes. Areas with darker colors signify a higher concentration of overlapping bounding boxes.
+7. **Spatial Distribution of Objects:** A chart that visualizes the bounding boxes of detected objects. Each bounding box is represented by a rectangle, with the color intensity indicating the degree of overlap with other bounding boxes. Areas with darker colors signify a higher concentration of overlapping bounding boxes.
 
 8. **Heatmap of Detection:** A heatmap visualization that showcases the spatial distribution of detected objects within the image space. The heatmap uses different colors to indicate the density of detections at various locations, with brighter colors representing higher concentrations.
 
