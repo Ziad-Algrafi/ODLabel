@@ -114,7 +114,7 @@ ODLabel is built using the following open-source libraries:
 - [PyTorch](https://pytorch.org)
 
 ODLabel runs locally on your machine and does not collect or send any data externally. Your data remains private and secure within your local environment.
-We extend our gratitude to @AILab-CVC for generously open-sourcing their model.
+We extend our gratitude to [AILab-CVC](https://github.com/AILab-CVC) for generously open-sourcing their model.
 
 ## Contact
 
