@@ -1,4 +1,4 @@
-![output](https://github.com/Ziad-Algrafi/ODLabel/assets/117011801/9fb27b28-eab1-4edb-9c1d-0535c4e0e99a)
+![output](https://github.com/Ziad-Algrafi/ODLabel/assets/117011801/0bf8f35d-5337-4ee4-b694-5c957fe25992)
 
 # ODLabel
 
