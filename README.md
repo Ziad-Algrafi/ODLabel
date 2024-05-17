@@ -52,7 +52,7 @@ odlabel-onnx
 
 ```
 
-1. Select a YOLO-World model file (.pt) for object detection.
+1. Select a YOLO-World model file based on your installation for object detection.
 2. Choose the folder containing the images you want to label.
 3. Specify the output directory where the labeled data will be saved.
 4. Enter the object categories you want to detect, separated by commas.
