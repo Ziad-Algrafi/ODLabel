@@ -132,8 +132,7 @@ This project is licensed under the GNU Affero General Public License v3.0 (AGPL-
 
 ## Contributing
 
-Contributions are welcome! If you find any issues or have suggestions for improvements, please open an issue or submit a pull request on the [GitHub repository](https://github.com/Ziad-Algrafi/odlabel).
-
+We welcome contributions! Please read our [Code of Conduct](CONTRIBUTING.md#code-of-conduct) and follow the [contribution guidelines](CONTRIBUTING.md#how-to-contribute) when submitting issues or pull requests.
 ## Acknowledgements
 
 ODLabel is built using the following open-source libraries:
