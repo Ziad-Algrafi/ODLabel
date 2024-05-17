@@ -38,10 +38,17 @@ pip install odlabel-onnx
 
 ## Usage
 
-To launch the ODLabel application, run the following command:
+To launch the PyTorch version of ODLabel application, run the following command:
 
 ```bash
 odlabel
+
+```
+
+To launch the ONNX version of ODLabel application, run the following command:
+
+```bash
+odlabel-onnx
 
 ```
 
@@ -57,23 +64,19 @@ odlabel
 
 | Model Type      | mAP  | mAP50 | mAP75 | Model                                                                                         |
 | --------------- | ---- | ----- | ----- | --------------------------------------------------------------------------------------------- |
-| yolov8s-world   | 37.4 | 52.0  | 40.6  | [Download](https://github.com/ultralytics/assets/releases/download/v8.2.0/yolov8s-world.pt)   |
 | yolov8s-worldv2 | 37.7 | 52.2  | 41.0  | [Download](https://github.com/ultralytics/assets/releases/download/v8.2.0/yolov8s-worldv2.pt) |
-| yolov8m-world   | 42.0 | 57.0  | 45.6  | [Download](https://github.com/ultralytics/assets/releases/download/v8.2.0/yolov8m-world.pt)   |
 | yolov8m-worldv2 | 43.0 | 58.4  | 46.8  | [Download](https://github.com/ultralytics/assets/releases/download/v8.2.0/yolov8m-worldv2.pt) |
-| yolov8l-world   | 45.7 | 61.3  | 49.8  | [Download](https://github.com/ultralytics/assets/releases/download/v8.2.0/yolov8l-world.pt)   |
 | yolov8l-worldv2 | 45.8 | 61.3  | 49.8  | [Download](https://github.com/ultralytics/assets/releases/download/v8.2.0/yolov8l-worldv2.pt) |
-| yolov8x-world   | 47.0 | 63.0  | 51.2  | [Download](https://github.com/ultralytics/assets/releases/download/v8.2.0/yolov8x-world.pt)   |
 | yolov8x-worldv2 | 47.1 | 62.8  | 51.4  | [Download](https://github.com/ultralytics/assets/releases/download/v8.2.0/yolov8x-worldv2.pt) |
 
 ## ONNX Model
 
-| Model Type      | mAP  | mAP50 | mAP75 | Model        |
-| --------------- | ---- | ----- | ----- | ------------ |
-| yolov8s-worldv2 | 37.7 | 52.2  | 41.0  | [Download]() |
-| yolov8m-worldv2 | 43.0 | 58.4  | 46.8  | [Download]() |
-| yolov8l-worldv2 | 45.8 | 61.3  | 49.8  | [Download]() |
-| yolov8x-worldv2 | 47.1 | 62.8  | 51.4  | [Download]() |
+| Model Type      | mAP  | mAP50 | mAP75 | Model                                                                                     |
+| --------------- | ---- | ----- | ----- | ----------------------------------------------------------------------------------------- |
+| yolov8s-worldv2 | 37.7 | 52.2  | 41.0  | [Download](https://github.com/Ziad-Algrafi/ODLabel/blob/main/assets/yolov8s-worldv2.onnx) |
+| yolov8m-worldv2 | 43.0 | 58.4  | 46.8  | [Download](https://github.com/Ziad-Algrafi/ODLabel/blob/main/assets/yolov8m-worldv2.onnx) |
+| yolov8l-worldv2 | 45.8 | 61.3  | 49.8  | [Download](https://github.com/Ziad-Algrafi/ODLabel/blob/main/assets/yolov8l-worldv2.onnx) |
+| yolov8x-worldv2 | 47.1 | 62.8  | 51.4  | [Download](https://github.com/Ziad-Algrafi/ODLabel/blob/main/assets/yolov8x-worldv2.onnx) |
 
 ## GUI Figures and Dashboard
 
@@ -140,7 +143,7 @@ ODLabel is built using the following open-source libraries:
 - [Matplotlib](https://matplotlib.org)
 - [OpenCV](https://opencv.org)
 - [PyTorch](https://pytorch.org)
-  [onnx]
+  [onnx] (https://onnxruntime.ai)
 
 - ODLabel runs locally on your machine and does not collect or send any data externally. Your data remains private and secure within your local environment.
 - We extend our gratitude to [AILab-CVC](https://github.com/AILab-CVC) for generously open-sourcing their model.
