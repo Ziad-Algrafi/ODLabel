@@ -18,10 +18,21 @@ ODLabel (Open Dictionary Labeler) is a powerful tool for zero-shot object detect
 
 ## Installation
 
-You can install ODLabel from [PyPI](https://pypi.org/project/odlabel/) using pip:
+### PyTorch Version
+
+To install the PyTorch version of ODLabel, run the following command:
 
 ```bash
 pip install odlabel
+
+```
+
+### ONNX Version
+
+To install the ONNX version of ODLabel, run the following command:
+
+```bash
+pip install odlabel-onnx
 
 ```
 
@@ -31,6 +42,7 @@ To launch the ODLabel application, run the following command:
 
 ```bash
 odlabel
+
 ```
 
 1. Select a YOLO-World model file (.pt) for object detection.
@@ -41,7 +53,7 @@ odlabel
 6. Click the "Start" button to begin the labeling process.
 7. Monitor the progress and view the detection results in the application.
 
-## Model
+## Pytroch Model
 
 | Model Type      | mAP  | mAP50 | mAP75 | Model                                                                                         |
 | --------------- | ---- | ----- | ----- | --------------------------------------------------------------------------------------------- |
@@ -53,6 +65,15 @@ odlabel
 | yolov8l-worldv2 | 45.8 | 61.3  | 49.8  | [Download](https://github.com/ultralytics/assets/releases/download/v8.2.0/yolov8l-worldv2.pt) |
 | yolov8x-world   | 47.0 | 63.0  | 51.2  | [Download](https://github.com/ultralytics/assets/releases/download/v8.2.0/yolov8x-world.pt)   |
 | yolov8x-worldv2 | 47.1 | 62.8  | 51.4  | [Download](https://github.com/ultralytics/assets/releases/download/v8.2.0/yolov8x-worldv2.pt) |
+
+## ONNX Model
+
+| Model Type      | mAP  | mAP50 | mAP75 | Model        |
+| --------------- | ---- | ----- | ----- | ------------ |
+| yolov8s-worldv2 | 37.7 | 52.2  | 41.0  | [Download]() |
+| yolov8m-worldv2 | 43.0 | 58.4  | 46.8  | [Download]() |
+| yolov8l-worldv2 | 45.8 | 61.3  | 49.8  | [Download]() |
+| yolov8x-worldv2 | 47.1 | 62.8  | 51.4  | [Download]() |
 
 ## GUI Figures and Dashboard
 
@@ -86,12 +107,19 @@ The following figures are available in the dashboard:
 
 These figures provide valuable insights into the input image data and the object detection results, enabling users to identify potential issues, patterns, and areas for further analysis or improvement. The dashboard serves as a powerful tool for exploring and understanding the data, facilitating informed decision-making and enhancing the overall object detection and labeling workflow.
 
-## Update
+## Upgrade
 
-You can upgrade ODLabel using pip:
+You can upgrade PyTorch version of ODLabel using pip:
 
 ```bash
 pip install --upgrade odlabel
+
+```
+
+You can upgrade ONNX version of ODLabel using pip:
+
+```bash
+pip install --upgrade odlabel-onnx
 
 ```
 
@@ -112,6 +140,7 @@ ODLabel is built using the following open-source libraries:
 - [Matplotlib](https://matplotlib.org)
 - [OpenCV](https://opencv.org)
 - [PyTorch](https://pytorch.org)
+  [onnx]
 
 - ODLabel runs locally on your machine and does not collect or send any data externally. Your data remains private and secure within your local environment.
 - We extend our gratitude to [AILab-CVC](https://github.com/AILab-CVC) for generously open-sourcing their model.
