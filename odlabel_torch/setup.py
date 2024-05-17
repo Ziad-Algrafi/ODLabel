@@ -1,28 +1,28 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="odlabel-onnx",
+    name="odlabel",
     version="0.7.26.8",
     packages=find_packages(),
     include_package_data=True,
     install_requires=[
         "customtkinter",
+        "ultralytics",
         "matplotlib",
         "numpy",
         "opencv-python",
-        "onnxruntime-gpu",
         "torch>=1.7.0",
         "torchvision>=0.8.0",
         "clip-for-odlabel",
     ],
     entry_points={
         "console_scripts": [
-            "odlabel-onnx=app_onnx.main:launch_GUI",
+            "odlabel=app.main:launch_GUI",
         ],
     },
     author="Ziad-Algrafi",
     author_email="ZiadAlgrafi@gmail.com",
-    description="A tool for object detection, labeling and visualization using ONNX",
+    description="A tool for object detection, labeling and visualization using PyTorch",
     long_description=open("../README.md").read(),
     long_description_content_type="text/markdown",
     url="https://github.com/Ziad-Algrafi/odlabel",
