@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="odlabel-onnx",
-    version="0.7.26.7",
+    version="0.7.26.8",
     packages=find_packages(),
     include_package_data=True,
     install_requires=[
@@ -11,9 +11,9 @@ setup(
         "numpy",
         "opencv-python",
         "onnxruntime-gpu",
-        "clip",
         "torch>=1.7.0",
         "torchvision>=0.8.0",
+        "clip-for-odlabel",
     ],
     entry_points={
         "console_scripts": [
