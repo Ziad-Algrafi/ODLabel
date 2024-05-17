@@ -69,14 +69,14 @@ odlabel-onnx
 | yolov8l-worldv2 | 45.8 | 61.3  | 49.8  | [Download](https://github.com/ultralytics/assets/releases/download/v8.2.0/yolov8l-worldv2.pt) |
 | yolov8x-worldv2 | 47.1 | 62.8  | 51.4  | [Download](https://github.com/ultralytics/assets/releases/download/v8.2.0/yolov8x-worldv2.pt) |
 
-## ONNX Model
+## ONNX Models
 
-| Model Type      | mAP  | mAP50 | mAP75 | Model                                                                                     |
-| --------------- | ---- | ----- | ----- | ----------------------------------------------------------------------------------------- |
-| yolov8s-worldv2 | 37.7 | 52.2  | 41.0  | [Download](https://github.com/Ziad-Algrafi/ODLabel/blob/main/assets/yolov8s-worldv2.onnx) |
-| yolov8m-worldv2 | 43.0 | 58.4  | 46.8  | [Download](https://github.com/Ziad-Algrafi/ODLabel/blob/main/assets/yolov8m-worldv2.onnx) |
-| yolov8l-worldv2 | 45.8 | 61.3  | 49.8  | [Download](https://github.com/Ziad-Algrafi/ODLabel/blob/main/assets/yolov8l-worldv2.onnx) |
-| yolov8x-worldv2 | 47.1 | 62.8  | 51.4  | [Download](https://github.com/Ziad-Algrafi/ODLabel/blob/main/assets/yolov8x-worldv2.onnx) |
+| Model Type      | mAP  | mAP50 | mAP75 | Model                                                                                              |
+| --------------- | ---- | ----- | ----- | -------------------------------------------------------------------------------------------------- |
+| yolov8s-worldv2 | 37.7 | 52.2  | 41.0  | [Download](https://github.com/Ziad-Algrafi/ODLabel/raw/main/assets/yolov8s-worldv2.onnx?download=) |
+| yolov8m-worldv2 | 43.0 | 58.4  | 46.8  | [Download](https://github.com/Ziad-Algrafi/ODLabel/raw/main/assets/yolov8m-worldv2.onnx?download=) |
+| yolov8l-worldv2 | 45.8 | 61.3  | 49.8  | [Download](https://github.com/Ziad-Algrafi/ODLabel/raw/main/assets/yolov8l-worldv2.onnx?download=) |
+| yolov8x-worldv2 | 47.1 | 62.8  | 51.4  | [Download](https://github.com/Ziad-Algrafi/ODLabel/raw/main/assets/yolov8x-worldv2.onnx?download=) |
 
 ## GUI Figures and Dashboard
 
@@ -133,6 +133,7 @@ This project is licensed under the GNU Affero General Public License v3.0 (AGPL-
 ## Contributing
 
 We welcome contributions! Please read our [Code of Conduct](CONTRIBUTING.md#code-of-conduct) and follow the [contribution guidelines](CONTRIBUTING.md#how-to-contribute) when submitting issues or pull requests.
+
 ## Acknowledgements
 
 ODLabel is built using the following open-source libraries:
