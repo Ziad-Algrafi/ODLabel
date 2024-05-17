@@ -1,0 +1,8 @@
+customtkinter
+matplotlib
+numpy
+opencv-python
+onnxruntime-gpu
+clip
+torch>=1.7.0
+torchvision>=0.8.0
