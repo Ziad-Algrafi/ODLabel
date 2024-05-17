@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="odlabel-onnx",
-    version="0.7.26.5",
+    version="0.7.26.6",
     packages=find_packages(),
     include_package_data=True,
     install_requires=[
