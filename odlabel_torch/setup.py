@@ -2,10 +2,12 @@ from setuptools import setup, find_packages
 
 setup(
     name="odlabel",
-    version="0.7.26.8",
+    version="0.7.26.9",
     packages=find_packages(),
     include_package_data=True,
     install_requires=[
+        "setuptools==69.5.1",
+        "wheel==0.43.0",
         "customtkinter",
         "ultralytics",
         "matplotlib",
@@ -37,5 +39,5 @@ setup(
         "Programming Language :: Python :: 3.12",
     ],
     python_requires=">=3.9",
-    setup_requires=["setuptools>=38.6.0", "wheel"],
+    setup_requires=["setuptools>=69.5.1", "wheel>=0.43.0"],
 )
