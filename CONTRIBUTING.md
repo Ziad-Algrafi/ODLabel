@@ -4,7 +4,7 @@ We appreciate contributions from the community to help improve ODLabel! Whether 
 
 ## How to Contribute
 
-1. **Report Issues**: If you encounter any bugs or issues, please [open a new issue](https://github.com/Ziad-Algrafi/odlabel/issues/new) on the GitHub repository. Provide a clear description of the problem, steps to reproduce, and any relevant information or error messages.
+1. **Report Issues**: If you encounter any bugs or issues, please [open a new issue](https://github.com/Ziad-Algrafi/odlabel/issues/new) on the GitHub repository. Provide a clear description of the problem, steps to reproduce, and any relevant information or error messages, including hardware specifications.
 
 2. **Propose Features**: Have an idea for a new feature or improvement? Discuss it by [opening a new issue](https://github.com/Ziad-Algrafi/odlabel/issues/new) and describe your proposal in detail. Explain the motivation behind the feature and how it would benefit ODLabel users.
 
@@ -15,7 +15,7 @@ We appreciate contributions from the community to help improve ODLabel! Whether 
    - Make your changes and commit them with descriptive commit messages.
    - Push your changes to your forked repository: `git push origin my-new-feature`
    - Open a new [Pull Request](https://github.com/Ziad-Algrafi/odlabel/pulls) against the `main` branch of the original repository.
-   - Provide a clear description of your changes, the motivation behind them, and any relevant information.
+   - Provide a clear description of your changes, and any relevant information.
 
 Please ensure that your code follows the project's coding conventions and includes appropriate tests.
 
